@@ -1,12 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% <SIM2 specification>
-% 1. world, body, camera frame - 3-D position, attitude applied
-% 2. Features with Distance, Attitude, Intrinsic Matrix Constraint 
-% 3. Visualization in 3D dimension and projected camera view
-% 4. Feature Tracks on image plane 
-% world frame (normal x,y,z), body frame (forward-x, right-y, down-z),
-% camera frame(forward-z, right-x, down-y) 
-% intrinsic matrix (K), extrinsic matrix (Tcb) applied
+% <SIM6 specification>
+% 1. visual system from SIM2 + IMU system from SIM3
+% 2. 
+% 3. 
 % 
 % Copyright with Jae Young Chung, robot0321 at github 
 % Lisence: MIT 
@@ -50,9 +46,7 @@ K = [f, 0, cx;
      0, 0, 1]; % intrinsic matrix
 
 mindist = 2; % minimum distance from a feature to camera principal point
-maxdist = 40; % maximum distance "
-
-featureTracks = {};
+maxdist = 30; % maximum distance "
 
 %% driving robot
 for i=1:size(tw_bw,2)
@@ -80,21 +74,7 @@ for i=1:size(tw_bw,2)
     k=i-1;
     if(i==1), feat_prevValidx = feat_world_validx; k=i; end
     feat_currValidx = feat_world_validx;
-    
-%     % build Tracks of tracked (exist on both prev&curr) features 
-    feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);
-% %     if(i==1), feat_currNewValidx = feat_currValidx; end
-    [feat_intrsectValidx, intrsect_previdx, intrsect_curridx] = ...
-        intersect(feat_prevValidx, feat_currValidx); % feature which is tracked 
-%     
-%     for j=1:feat_currNewValidx
-%         if intersect
-%             featureTracks{j} = struct('pts',feat_position(:,feat_intrsectValidx),'frame',i);
-%         else 
-%             featureTracks{j} = struct('pts',feat_position(:,feat_intrsectValidx),'frame',i);
-%         end
-%     end
-    
+
     figure(1); 
     % 3-D features, robot, path and the features in view
     subplot(1,2,1); 
@@ -108,9 +88,10 @@ for i=1:size(tw_bw,2)
     
     % Features projected on the camera with the constraints and optical flow
     subplot(1,2,2); 
-    feat_currNewPixel = world2cam(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i)); % features which is newly appeared 
-    feat_currTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i)); 
-    feat_prevTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k));
+    feat_intrsctValidx = intersect(feat_prevValidx, feat_currValidx); % feature which is tracked 
+    feat_currNewPixel = world2cam(feat_position(:,setdiff(feat_currValidx, feat_prevValidx)), K, Tcb*Tbw(:,:,i)); % features which is newly appeared 
+    feat_currTrckPixel = world2cam(feat_position(:,feat_intrsctValidx), K, Tcb*Tbw(:,:,i)); 
+    feat_prevTrckPixel = world2cam(feat_position(:,feat_intrsctValidx), K, Tcb*Tbw(:,:,k));
     % caution: not-tracked previous features are not drew (because not interested)
     
     % current & previous features on camera image plane

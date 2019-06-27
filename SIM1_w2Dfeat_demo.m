@@ -8,9 +8,12 @@
 clc; clear; close all; 
 rng(10);
 
-%% environment & robot setting
+%% environment setting
 Nfeatures = 500; % the number of features
+% x,y: 'Nfeatures' number of features, in range (-50,100)
+feat_position = rand(2,Nfeatures)*100 - 25;
 
+%% path setting
 fwd_speed = 2; % speed along the forward direction
 rot_time = 10; % steps needs to be rotated
 
@@ -21,10 +24,7 @@ heading = pi/180*[zeros(size(0:fwd_speed:50)), linspace(0,90,rot_time), 90*ones(
             linspace(90,180,rot_time), 180*ones(size(50:-fwd_speed:0)),linspace(180,270,rot_time), 270*ones(size(50:-fwd_speed:0))]; % yaw (rad)
 robot = [path; heading]; 
          
-% x,y: 'Nfeatures' number of features, in range (-50,100)
-feat_position = rand(2,Nfeatures)*100 - 25;
-
-% robot(camera) setting
+%% camera setting
 theta = 45*pi/180; % angle between principal axis and the edge of the image plane (arbitarilliy selected)
 mindist = 2; % minimum distance from a feature to camera principal point
 maxdist = 20; % maximum distance "
