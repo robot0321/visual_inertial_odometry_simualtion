@@ -15,3 +15,6 @@ This is MATLAB simulation for visual-odometry & visual-inertial odometry & visua
 4. (*not yet*) **SIM4_WheelOdo_demo.m** is a simulation of inverse WheelOdometry and WheelOdometry with error model
 5. (*not yet*) **SIM5_Visual_odometry_demo.m** is a simulation of visual odometry using the camera in SIM2 
 6. (*not yet*) **SIM6_Visual_inertial_odometry_demo.m** is a simulation of visual-inertial odometry using the camera in SIM2 and IMU in SIM3
+
+## Liscence
+GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007

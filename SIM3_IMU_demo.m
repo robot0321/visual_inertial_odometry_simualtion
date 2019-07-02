@@ -5,7 +5,7 @@
 % 3. INS (From inertial data To world path & att) with IMU error model
 % 
 % Copyright with Jae Young Chung, robot0321 at github 
-% Lisence: MIT 
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
 rng(10);

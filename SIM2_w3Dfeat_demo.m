@@ -8,10 +8,11 @@
 % camera frame(forward-z, right-x, down-y) 
 % intrinsic matrix (K), extrinsic matrix (Tcb) applied
 % 
-% Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental matrix), distCoeff
+% Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental
+% matrix), distCoeff(& error)
 % 
 % Copyright with Jae Young Chung, robot0321 at github 
-% Lisence: MIT 
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
 rng(10);
@@ -161,26 +162,25 @@ function pixel2 = world2pixel(feat_world3, K, Tcw, distCoeff, isDistorted)
     if (size(feat_world3,2)==3)
         feat_world3 = feat_world3';
     end
-    feat_camera3 = Tcw * [feat_world3; ones(1,size(feat_world3,2))];
-    feat_camera3 = feat_camera3(1:3,:);
+    feat_camera4 = Tcw * [feat_world3; ones(1,size(feat_world3,2))];
+    % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] (simulation)
+    feat_normUndist = feat_camera4(1:3,:)./feat_camera4(3,:);
     
     % Error modeling due tothe lens
     distCoeff5 = distCoeff(1:7); % k1, k2, p1, p2, k3, k4, k5
     distCoeff2 = distCoeff(1:4); % k1, k2, p1, p2
     if(isDistorted)
-        % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] (simulation)
         % [x_nu, y_nu, 1] -- LensDistortion(5th order) --> [x_nd, y_nd, 1]
-        feat_normDistort3 = LensDistortion(feat_camera3./feat_camera3(3,:), distCoeff5); 
+        feat_normDistort3 = LensDistortion(feat_normUndist, distCoeff5); 
         
         % [x_nd, y_nd, 1] -- undistort(2nd order) --> [x_nu2, y_nu2, 1]
-        feat_normUndist3 = undistort(feat_normDistort3, distCoeff2, 10);
+        feat_normUndist2 = undistort(feat_normDistort3, distCoeff2, 10);
         
         % [x_nu2, y_nu2, 1] -- K* --> [x_pu, y_pu, 1]
-        feat_pixel = K*feat_normUndist3;
+        feat_pixel = K*feat_normUndist2;
     else
-        % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] 
         % [x_nu, y_nu, 1] -- K* --> [x_pu, y_pu, 1]
-        feat_pixel = K*(feat_camera3./feat_camera3(3,:));
+        feat_pixel = K*feat_normUndist;
     end
     
     pixel2 = feat_pixel(1:2,:);
@@ -198,7 +198,7 @@ end
 
 function feat_normUndistort3 = undistort(feat_normDistorted3, distCoeff, maxIter) %2nd order approximation
     Nframe= size(feat_normDistorted3,2);
-    dc = zeros(1,10); dc(1:length(distCoeff)) = distCoeff; % รั k1~5, p1,2
+    dc = zeros(1,10); dc(1:length(distCoeff)) = distCoeff; % k1~5, p1,2
 
     % undistorted points
     x= feat_normDistorted3(1,:); y = feat_normDistorted3(2,:);
