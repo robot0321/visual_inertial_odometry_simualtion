@@ -59,9 +59,8 @@ maxdist = 40; % maximum distance "
 isCamPixelError = false;
 PixelErr = 1; 
 
-% Whether applying undistortion error 
+% Whether applying undistortion error//distCoeff: [k1, k2, p1, p2, k3, k4, k5]
 isDistorted = false;
-% k1, k2, p1, p2, k3, k4, k5
 distCoeff = [-0.5359, 0.3669, -0.0035, 0.0073, 0.1043, -0.0387, -0.0127]; % example
 
 featureTracks = {};
@@ -101,9 +100,9 @@ for i=1:size(tw_bw,2)
 
     
     % Features on Camera Plane 
-    feat_prevTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distCoeff, isDistorted);
-    feat_currNewPixel = world2pixel(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);  % features which is newly appeared 
-    feat_currTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);
+    [feat_prevTrckPixel, feat_prevTrckNormal] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distCoeff, isDistorted);
+    feat_currNewPixel                         = world2pixelNnormal(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);  % features which is newly appeared 
+    [feat_currTrckPixel, feat_currTrckNormal] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);
     % caution: not-tracked previous features are not drew (because not interested)
     
     if(isCamPixelError)
@@ -112,13 +111,29 @@ for i=1:size(tw_bw,2)
         feat_currNewPixel = feat_currNewPixel + currNewPixelErr;
         feat_currTrckPixel = feat_currTrckPixel + currTrckPixelErr;
     end
+    
     % Fundamental Matrix with RANSAC
     [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
-                        'Method', 'RANSAC', 'DistanceThreshold', 0.1);
+                        'Method', 'RANSAC', 'DistanceThreshold', 0.7);
     % Testing Inlier Ratio
     sum(valid_index)/size(feat_prevTrckPixel,2)
-
     
+    % epipolar constraint (index k == b1 time / index i == b2 time)
+    R_b1b2 = Tbw(1:3,1:3,k)*Tbw(1:3,1:3,i)'; % R_b1w * R_wb2
+    dp_b1_b1b2 = Tbw(1:3,4,k) - R_b1b2*Tbw(1:3,4,i) + 1e-7*rand(3,1); % Pb1_b1w - Rb1b2 * Pb2_b2w
+    R = Tcb(1:3,1:3) * R_b1b2 * Tcb(1:3,1:3)'; % Rc1c2 = Rc1b1 * Rb1b2 * Rb2c2
+    dp = Tcb(1:3,4) + Tcb(1:3,1:3)*dp_b1_b1b2 + (-R*Tcb(1:3,4));
+    d_list = [];
+    for j=1:length(feat_prevTrckNormal)
+        % epipolar constraint
+        dpx = [0, -dp(3), dp(2); dp(3), 0, -dp(1); -dp(2), dp(1), 0];
+        d_list = [d_list; feat_prevTrckNormal(:,j)'* dpx * R * feat_currTrckNormal(:,j)];
+%         d_list = [d_list; dot(-cross(feat_prevTrckNormal(:,j), R*feat_currTrckNormal(:,j)), dp)];
+   end
+    
+    figure(3);
+    histogram(sort(d_list),31);
+    axis([-1e-8, 1e-8, 0, 50])
     %% draw figures
     figure(1); 
     % 3-D features, robot, path and the features in view
@@ -149,12 +164,14 @@ for i=1:size(tw_bw,2)
 %     stem(sort(sqrt(sum((currpos-feat_position(:,feat_intrsectValidx(valid_index))).^2)))); hold on;
 %     stem(sort(sqrt(sum((currpos-feat_position(:,feat_intrsectValidx(~valid_index))).^2))));
                     
-    % For next step
+%% For next step
     feat_prevValidx = feat_currValidx;
 %     feat_prevErr = struct('NewPixErr',currNewPixelErr,'TrckPixErr',currTrckPixelErr); % noised pixels of previous step 
 end
 
-function pixel2 = world2pixel(feat_world3, K, Tcw, distCoeff, isDistorted)
+
+%% functions 
+function [pixel2, normal] = world2pixelNnormal(feat_world3, K, Tcw, distCoeff, isDistorted)
     % Transformation from world to camera with intrinsic matrix 
     if isempty(feat_world3)
         pixel2 = []; return;
@@ -177,9 +194,11 @@ function pixel2 = world2pixel(feat_world3, K, Tcw, distCoeff, isDistorted)
         feat_normUndist2 = undistort(feat_normDistort3, distCoeff2, 10);
         
         % [x_nu2, y_nu2, 1] -- K* --> [x_pu, y_pu, 1]
+        normal = feat_normUndist2;
         feat_pixel = K*feat_normUndist2;
     else
         % [x_nu, y_nu, 1] -- K* --> [x_pu, y_pu, 1]
+        normal = feat_normUndist;
         feat_pixel = K*feat_normUndist;
     end
     
