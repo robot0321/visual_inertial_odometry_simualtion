@@ -52,6 +52,10 @@ K = [f, 0, cx;
 mindist = 2; % minimum distance from a feature to camera principal point
 maxdist = 40; % maximum distance "
 
+% noise on camera plane (pixel noise) about 0.1 ~ 2
+isCamPixelError = true;
+PixelErr = 0.1; 
+
 featureTracks = {};
 
 %% driving robot
@@ -81,7 +85,7 @@ for i=1:size(tw_bw,2)
     if(i==1), feat_prevValidx = feat_world_validx; k=i; end
     feat_currValidx = feat_world_validx;
     
-%     % build Tracks of tracked (exist on both prev&curr) features 
+    % build Tracks of tracked (exist on both prev&curr) features 
     feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);
 % %     if(i==1), feat_currNewValidx = feat_currValidx; end
     [feat_intrsectValidx, intrsect_previdx, intrsect_curridx] = ...
@@ -108,25 +112,34 @@ for i=1:size(tw_bw,2)
     
     % Features projected on the camera with the constraints and optical flow
     subplot(1,2,2); 
-    feat_currNewPixel = world2cam(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i)); % features which is newly appeared 
-    feat_currTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i)); 
+    
+    feat_currNewPixel = world2cam(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i));  % features which is newly appeared 
+    feat_currTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i));
     feat_prevTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k));
     % caution: not-tracked previous features are not drew (because not interested)
+    if(isCamPixelError)
+        feat_currNewPixel = feat_currNewPixel + PixelErr*randn(size(feat_currNewPixel));
+        feat_currTrckPixel = feat_currTrckPixel + PixelErr*randn(size(feat_currTrckPixel));
+    end
     
     % current & previous features on camera image plane
     scatter(feat_currTrckPixel(1,:), feat_currTrckPixel(2,:),50,'r'); hold on;
     if ~isempty(feat_currNewPixel), scatter(feat_currNewPixel(1,:), feat_currNewPixel(2,:),50,'r'); hold on; end % avoid the error when it is empty
     scatter(feat_prevTrckPixel(1,:), feat_prevTrckPixel(2,:),'g'); 
     
+    [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
+                        'Method', 'RANSAC', 'DistanceThreshold', 0.1);
+    sum(valid_index)/size(feat_prevTrckPixel,2)
+    
     % optical flow between tracked features
-    plot([feat_prevTrckPixel(1,:); feat_currTrckPixel(1,:)], [feat_prevTrckPixel(2,:); feat_currTrckPixel(2,:)],'-y');
+    plot([feat_prevTrckPixel(1,valid_index); feat_currTrckPixel(1,valid_index)], [feat_prevTrckPixel(2,valid_index); feat_currTrckPixel(2,valid_index)],'-y');
+    plot([feat_prevTrckPixel(1,~valid_index); feat_currTrckPixel(1,~valid_index)], [feat_prevTrckPixel(2,~valid_index); feat_currTrckPixel(2,~valid_index)],'-k');
     axis equal; hold off;
     axis([0, 640, 0, 480]);
-    
+                    
     % For next step
     feat_prevValidx = feat_currValidx;
 end
-
 
 function pixel2 = world2cam(feat_world3, K, Tcw)
     % transformation from world to camera with intrinsic matrix 
