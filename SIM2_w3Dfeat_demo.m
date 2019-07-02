@@ -8,6 +8,8 @@
 % camera frame(forward-z, right-x, down-y) 
 % intrinsic matrix (K), extrinsic matrix (Tcb) applied
 % 
+% Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental matrix), distCoeff
+% 
 % Copyright with Jae Young Chung, robot0321 at github 
 % Lisence: MIT 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,7 +17,7 @@ clc; clear; close all;
 rng(10);
 
 %% environment setting
-Nfeatures = 1000; % the number of features
+Nfeatures = 2000; % the number of features
 % x,y: 'Nfeatures' number of features, in range (-50,100)
 feat_position = [rand(2,Nfeatures)*100 - 25; rand(1,Nfeatures)*30-15];
 
@@ -53,8 +55,13 @@ mindist = 2; % minimum distance from a feature to camera principal point
 maxdist = 40; % maximum distance "
 
 % noise on camera plane (pixel noise) about 0.1 ~ 2
-isCamPixelError = true;
-PixelErr = 0.1; 
+isCamPixelError = false;
+PixelErr = 1; 
+
+% Whether applying undistortion error 
+isDistorted = false;
+% k1, k2, p1, p2, k3, k4, k5
+distCoeff = [-0.5359, 0.3669, -0.0035, 0.0073, 0.1043, -0.0387, -0.0127]; % example
 
 featureTracks = {};
 
@@ -87,18 +94,31 @@ for i=1:size(tw_bw,2)
     
     % build Tracks of tracked (exist on both prev&curr) features 
     feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);
-% %     if(i==1), feat_currNewValidx = feat_currValidx; end
-    [feat_intrsectValidx, intrsect_previdx, intrsect_curridx] = ...
+%     if(i==1), feat_currNewValidx = feat_currValidx; end
+    [feat_intrsectValidx, ~, ~] = ...
         intersect(feat_prevValidx, feat_currValidx); % feature which is tracked 
-%     
-%     for j=1:feat_currNewValidx
-%         if intersect
-%             featureTracks{j} = struct('pts',feat_position(:,feat_intrsectValidx),'frame',i);
-%         else 
-%             featureTracks{j} = struct('pts',feat_position(:,feat_intrsectValidx),'frame',i);
-%         end
-%     end
+
     
+    % Features on Camera Plane 
+    feat_prevTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distCoeff, isDistorted);
+    feat_currNewPixel = world2pixel(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);  % features which is newly appeared 
+    feat_currTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distCoeff, isDistorted);
+    % caution: not-tracked previous features are not drew (because not interested)
+    
+    if(isCamPixelError)
+        currNewPixelErr = PixelErr*randn(size(feat_currNewPixel));
+        currTrckPixelErr = PixelErr*randn(size(feat_currTrckPixel));
+        feat_currNewPixel = feat_currNewPixel + currNewPixelErr;
+        feat_currTrckPixel = feat_currTrckPixel + currTrckPixelErr;
+    end
+    % Fundamental Matrix with RANSAC
+    [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
+                        'Method', 'RANSAC', 'DistanceThreshold', 0.1);
+    % Testing Inlier Ratio
+    sum(valid_index)/size(feat_prevTrckPixel,2)
+
+    
+    %% draw figures
     figure(1); 
     % 3-D features, robot, path and the features in view
     subplot(1,2,1); 
@@ -107,49 +127,88 @@ for i=1:size(tw_bw,2)
     plot3([currpos(1)*ones(1,size(feat_world_validx,2)); feat_position(1,feat_world_validx)], ...
          [currpos(2)*ones(1,size(feat_world_validx,2)); feat_position(2,feat_world_validx)], ...
          [currpos(3)*ones(1,size(feat_world_validx,2)); feat_position(3,feat_world_validx)],'k'); 
+  
     scatter3(currpos(1),currpos(2), currpos(3), 50,'g','filled');
     axis equal; hold off;
     
-    % Features projected on the camera with the constraints and optical flow
     subplot(1,2,2); 
-    
-    feat_currNewPixel = world2cam(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i));  % features which is newly appeared 
-    feat_currTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i));
-    feat_prevTrckPixel = world2cam(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k));
-    % caution: not-tracked previous features are not drew (because not interested)
-    if(isCamPixelError)
-        feat_currNewPixel = feat_currNewPixel + PixelErr*randn(size(feat_currNewPixel));
-        feat_currTrckPixel = feat_currTrckPixel + PixelErr*randn(size(feat_currTrckPixel));
-    end
-    
-    % current & previous features on camera image plane
+    % current & previous features on camera image plane, and optical flow
     scatter(feat_currTrckPixel(1,:), feat_currTrckPixel(2,:),50,'r'); hold on;
     if ~isempty(feat_currNewPixel), scatter(feat_currNewPixel(1,:), feat_currNewPixel(2,:),50,'r'); hold on; end % avoid the error when it is empty
     scatter(feat_prevTrckPixel(1,:), feat_prevTrckPixel(2,:),'g'); 
-    
-    [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
-                        'Method', 'RANSAC', 'DistanceThreshold', 0.1);
-    sum(valid_index)/size(feat_prevTrckPixel,2)
     
     % optical flow between tracked features
     plot([feat_prevTrckPixel(1,valid_index); feat_currTrckPixel(1,valid_index)], [feat_prevTrckPixel(2,valid_index); feat_currTrckPixel(2,valid_index)],'-y');
     plot([feat_prevTrckPixel(1,~valid_index); feat_currTrckPixel(1,~valid_index)], [feat_prevTrckPixel(2,~valid_index); feat_currTrckPixel(2,~valid_index)],'-k');
     axis equal; hold off;
     axis([0, 640, 0, 480]);
+    
+    % Valid or Not along the distance to feature 
+%     figure(2);
+%     stem(sort(sqrt(sum((currpos-feat_position(:,feat_intrsectValidx(valid_index))).^2)))); hold on;
+%     stem(sort(sqrt(sum((currpos-feat_position(:,feat_intrsectValidx(~valid_index))).^2))));
                     
     % For next step
     feat_prevValidx = feat_currValidx;
+%     feat_prevErr = struct('NewPixErr',currNewPixelErr,'TrckPixErr',currTrckPixelErr); % noised pixels of previous step 
 end
 
-function pixel2 = world2cam(feat_world3, K, Tcw)
-    % transformation from world to camera with intrinsic matrix 
+function pixel2 = world2pixel(feat_world3, K, Tcw, distCoeff, isDistorted)
+    % Transformation from world to camera with intrinsic matrix 
     if isempty(feat_world3)
         pixel2 = []; return;
     end
     if (size(feat_world3,2)==3)
         feat_world3 = feat_world3';
     end
-    feat_cam = Tcw*[feat_world3; ones(1,size(feat_world3,2))];
-    feat_pixel = K*(feat_cam(1:3,:)./feat_cam(3,:));
+    feat_camera3 = Tcw * [feat_world3; ones(1,size(feat_world3,2))];
+    feat_camera3 = feat_camera3(1:3,:);
+    
+    % Error modeling due tothe lens
+    distCoeff5 = distCoeff(1:7); % k1, k2, p1, p2, k3, k4, k5
+    distCoeff2 = distCoeff(1:4); % k1, k2, p1, p2
+    if(isDistorted)
+        % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] (simulation)
+        % [x_nu, y_nu, 1] -- LensDistortion(5th order) --> [x_nd, y_nd, 1]
+        feat_normDistort3 = LensDistortion(feat_camera3./feat_camera3(3,:), distCoeff5); 
+        
+        % [x_nd, y_nd, 1] -- undistort(2nd order) --> [x_nu2, y_nu2, 1]
+        feat_normUndist3 = undistort(feat_normDistort3, distCoeff2, 10);
+        
+        % [x_nu2, y_nu2, 1] -- K* --> [x_pu, y_pu, 1]
+        feat_pixel = K*feat_normUndist3;
+    else
+        % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] 
+        % [x_nu, y_nu, 1] -- K* --> [x_pu, y_pu, 1]
+        feat_pixel = K*(feat_camera3./feat_camera3(3,:));
+    end
+    
     pixel2 = feat_pixel(1:2,:);
+end
+
+function feat_normDistort3 = LensDistortion(feat_normUndist3, distCoeff5) % 5th order modeling
+    dc = zeros(1,10); dc(1:length(distCoeff5)) = distCoeff5; % k1~5, p1,2
+    
+    x_nu = feat_normUndist3(1,:); y_nu = feat_normUndist3(2,:);
+    r2 = x_nu.^2 + y_nu.^2;
+    xy_nd = (1 + ((((dc(7).*r2 + dc(6)).*r2 + dc(5)).*r2 + dc(2)).*r2+ dc(1)).*r2) .* [x_nu;y_nu] ...
+             + [2*dc(3)*x_nu.*y_nu + dc(4)*(r2+2*x_nu.*x_nu); dc(3)*(r2+2*y_nu.*y_nu) + 2*dc(4)*x_nu.*y_nu];
+    feat_normDistort3 = [xy_nd; ones(1,size(xy_nd,2))];
+end
+
+function feat_normUndistort3 = undistort(feat_normDistorted3, distCoeff, maxIter) %2nd order approximation
+    Nframe= size(feat_normDistorted3,2);
+    dc = zeros(1,10); dc(1:length(distCoeff)) = distCoeff; % รั k1~5, p1,2
+
+    % undistorted points
+    x= feat_normDistorted3(1,:); y = feat_normDistorted3(2,:);
+    x0 = x; y0 = y;
+    for i = 1:maxIter
+        r2 = x.^2 + y.^2;
+        icdist =  1./(1 + ((((dc(7).*r2 + dc(6)).*r2 + dc(5)).*r2 + dc(2)).*r2+ dc(1)).*r2);
+        dx = 2*dc(3)*x.*y + dc(4)*(r2 + 2*x.*x);
+        dy = dc(3) * (r2 + 2*y.*y) + 2*dc(4)*x.*y;
+        x = (x0-dx).*icdist;		y = (y0-dy).*icdist;
+    end
+    feat_normUndistort3 = [x; y; ones(1, Nframe)];
 end
