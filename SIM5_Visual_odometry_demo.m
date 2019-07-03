@@ -20,7 +20,7 @@ fwd_speed = 2; % speed along the forward direction
 rot_time = 10; % steps needs to be rotated
 
 % body position and attitude in world view
-tw_bw  = [0:fwd_speed:50, 50*ones(1,rot_time), 50*ones(size(0:fwd_speed:50)), 50*ones(1,rot_time),  50:-fwd_speed:0, 0*ones(1,rot_time), zeros(size(50:-fwd_speed:0));
+tw_wb  = [0:fwd_speed:50, 50*ones(1,rot_time), 50*ones(size(0:fwd_speed:50)), 50*ones(1,rot_time),  50:-fwd_speed:0, 0*ones(1,rot_time), zeros(size(50:-fwd_speed:0));
          zeros(size(0:fwd_speed:50)), 0*ones(1,rot_time), 0:fwd_speed:50, 50*ones(1,rot_time), 50*ones(size(50:-fwd_speed:0)), 50*ones(1,rot_time), 50:-fwd_speed:0;
          zeros(1, size(0:fwd_speed:50,2)+size(0:fwd_speed:50,2)+size(50:-fwd_speed:0,2)+size(50:-fwd_speed:0,2)+ rot_time*3)];
 heading = pi/180*[zeros(size(0:fwd_speed:50)), linspace(0,90,rot_time), 90*ones(size(0:fwd_speed:50)), ...
@@ -30,17 +30,18 @@ roll = pi*ones(size(heading));
 Rbw = angle2dcm(heading, pitch, roll); % dcm rotation matrix
 
 % Transformation matrix world to body T^w_b
-tb_bw = zeros(3,1,size(tw_bw,2));
-for i=1:size(tw_bw,2)
-    tb_bw(:,1,i) = -Rbw(:,:,i)*tw_bw(:,i); 
+tb_bw = zeros(3,1,size(tw_wb,2));
+for i=1:size(tw_wb,2)
+    tb_bw(:,1,i) = -Rbw(:,:,i)*tw_wb(:,i); 
 end
-Tbw = [Rbw, tb_bw; zeros(1,3,size(tw_bw,2)),ones(1,1,size(tw_bw,2))]; % T^b_w
+Tbw = [Rbw, tb_bw; zeros(1,3,size(tw_wb,2)),ones(1,1,size(tw_wb,2))]; % T^b_w
 
 %% camera setting
 Tcb = [angle2dcm(pi/2, 0,pi/2), -[0;0;1e-3]; zeros(1,3), 1]; % T^c_b, extrinsic
 % -> the origin of camera frame is at the (x = 1e-3m, y = 0, z = 0) in body frame
 f = 433; % focal_length
 cx = 320.5; cy=240.5; % 640 x 480 (arbitariliy selected)
+px = 640; py =480;    % 640 x 480 (arbitariliy selected)
 K = [f, 0, cx;
      0, f, cy;
      0, 0, 1]; % intrinsic matrix
