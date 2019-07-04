@@ -1,7 +1,9 @@
-# (Mono) Visual [ Inertial | Wheel ] Odometry Simualtion
+* **NOTE:** This README.md provides the guidelines in English and Korean (한국어 설명은 **아래에** 있습니다.)
+
+# (Mono) Visual { Inertial | Wheel } Odometry Simualtion
 MATLAB simulation of (Mono) visual-inertial odometry (VIO) & visual-wheel odometry
 
-These are MATLAB simulations of (Mono) Visual [ Inertial | Wheel ] Odometry
+These are MATLAB simulations of (Mono) Visual { Inertial | Wheel } Odometry
 These simulations provide the ideal case with **some noises** which can be turned off and on.
 
 * You can use this simulation belong your need
@@ -39,7 +41,7 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 *****
 
 ### 내용 설명 (Guidelines in Korean)
-* (모노) 비주얼 [ 관성 | 휠 ] 오도메트리에 대한 매트랩 시뮬레이션 입니다. 
+* (모노) 비주얼 { 관성 | 휠 } 오도메트리에 대한 매트랩 시뮬레이션 입니다. 
 * 노이즈가 없는 이상적인 케이스가 제공되며, 노이즈는 필요에 따라 사용하거나 사용하지 않도록 설정할 수 있습니다.
 * 라이센스는 GNU 버전3를 따릅니다. 이는 자유롭게 사용하되, 같은 라이센스(GNUv3)를 명시하고 그 결과물을 공유해야 한다는 것을 의미합니다.
 * 모든 시뮬레이션 파일은 수정없이 바로 동작 가능하도록 체크하고 올립니다만, 문제가 있을 경우 말씀해주세요.
