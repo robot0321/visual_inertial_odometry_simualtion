@@ -1,4 +1,4 @@
-* **NOTE:** This README.md provides the guidelines in English and Korean (ÇÑ±¹¾î ¼³¸íÀº **¾Æ·¡¿¡** ÀÖ½À´Ï´Ù.)
+* **NOTE:** This README.md provides the guidelines in English and Korean (í•œêµ­ì–´ ì„¤ëª…ì€ **ì•„ëž˜ì—** ìžˆìŠµë‹ˆë‹¤.)
 
 # (Mono) Visual { Inertial | Wheel } Odometry Simualtion
 MATLAB simulation of (Mono) visual-inertial odometry (VIO) & visual-wheel odometry
@@ -13,63 +13,63 @@ These simulations provide the ideal case with **some noises** which can be turne
 ## Code Description 
 (Each SIMx-files are in a group)
 1. **SIM1_w2Dfeat_demo.m** 
-> SIM1 is a simple 2D simulation of camera. Using features with angle and distance constraint.
+> * SIM1 is a simple 2D simulation of camera. Using features with angle and distance constraint.
 
 2. **SIM2_w3Dfeat_demo.m** 
-> SIM2 is a 3D simulation of camera with features and optical flow.
-> SIM2 apply 3D position and attitude in world, body, camera frame.
-> SIM2 selects features with distance, camera heading, intrinsic matrix constraint. 
-> SIM2 visualize the **camera-robot in 3D** dimension and **projected camera view**
-> SIM2 describe the **Ideal Case** with on-off camera error model (ex. distortion, pixel error, miss tracking)
+> * SIM2 is a 3D simulation of camera with features and optical flow.
+> * SIM2 apply 3D position and attitude in world, body, camera frame.
+> * SIM2 selects features with distance, camera heading, intrinsic matrix constraint. 
+> * SIM2 visualize the **camera-robot in 3D** dimension and **projected camera view**
+> * SIM2 describe the **Ideal Case** with on-off camera error model (ex. distortion, pixel error, miss tracking)
 
 3. (*not yet*) **SIM3_IMU_demo.m** 
-> ~~SIM3 is a simulation of inverse INS(path2IMUdata), INS(IMUdata2path) and IMU error model~~ 
+> * ~~SIM3 is a simulation of inverse INS(path2IMUdata), INS(IMUdata2path) and IMU error model~~ 
 4. (*not yet*) **SIM4_WheelOdo_demo.m** 
-> ~~SIM4 is a simulation of inverse WheelOdometry and WheelOdometry with error model~~
+> * ~~SIM4 is a simulation of inverse WheelOdometry and WheelOdometry with error model~~
 5. (*not yet*) **SIM5_Visual_odometry_demo.m** 
-> ~~SIM5 is a simulation of visual odometry using the camera in SIM2 ~~
+> * ~~SIM5 is a simulation of visual odometry using the camera in SIM2 ~~
 
 6. (*Editing*) **SIM6_Visual_inertial_odometry_demo.m** 
-> SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and ~~IMU in SIM3~~
-> SIM6 visualize as same as SIM2
-> ~~SIM6 makes feature Tracks on image plane~~
-> ~~SIM6 calculate epipoar constraint cost to with matched features~~
+> * SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and ~~IMU in SIM3~~
+> * SIM6 visualize as same as SIM2
+> * ~~SIM6 makes feature Tracks on image plane~~
+> * ~~SIM6 calculate epipoar constraint cost to with matched features~~
 
 ## Liscence
 GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 
 *****
 
-### ³»¿ë ¼³¸í (Guidelines in Korean)
-* (¸ð³ë) ºñÁÖ¾ó { °ü¼º | ÈÙ } ¿Àµµ¸ÞÆ®¸®¿¡ ´ëÇÑ ¸ÅÆ®·¦ ½Ã¹Ä·¹ÀÌ¼Ç ÀÔ´Ï´Ù. 
-* ³ëÀÌÁî°¡ ¾ø´Â ÀÌ»óÀûÀÎ ÄÉÀÌ½º°¡ Á¦°øµÇ¸ç, ³ëÀÌÁî´Â ÇÊ¿ä¿¡ µû¶ó »ç¿ëÇÏ°Å³ª »ç¿ëÇÏÁö ¾Êµµ·Ï ¼³Á¤ÇÒ ¼ö ÀÖ½À´Ï´Ù.
-* ¶óÀÌ¼¾½º´Â GNU ¹öÀü3¸¦ µû¸¨´Ï´Ù. ÀÌ´Â ÀÚÀ¯·Ó°Ô »ç¿ëÇÏµÇ, °°Àº ¶óÀÌ¼¾½º(GNUv3)¸¦ ¸í½ÃÇÏ°í ±× °á°ú¹°À» °øÀ¯ÇØ¾ß ÇÑ´Ù´Â °ÍÀ» ÀÇ¹ÌÇÕ´Ï´Ù.
-* ¸ðµç ½Ã¹Ä·¹ÀÌ¼Ç ÆÄÀÏÀº ¼öÁ¤¾øÀÌ ¹Ù·Î µ¿ÀÛ °¡´ÉÇÏµµ·Ï Ã¼Å©ÇÏ°í ¿Ã¸³´Ï´Ù¸¸, ¹®Á¦°¡ ÀÖÀ» °æ¿ì ¸»¾¸ÇØÁÖ¼¼¿ä.
-* È¤½Ã ÀÛµ¿ÀÌ µÇÁö ¾Ê´Â´Ù¸é, ¹öÀü ¹®Á¦ÀÏ ¼ö ÀÖ½À´Ï´Ù. º» ÄÚµå´Â ¸ÅÆ®·¦2019a¿¡¼­ ÀÛ¼ºµÇ¾ú½À´Ï´Ù.
+### ë‚´ìš© ì„¤ëª… (Guidelines in Korean)
+* (ëª¨ë…¸) ë¹„ì£¼ì–¼ { ê´€ì„± | íœ  } ì˜¤ë„ë©”íŠ¸ë¦¬ì— ëŒ€í•œ ë§¤íŠ¸ëž© ì‹œë®¬ë ˆì´ì…˜ ìž…ë‹ˆë‹¤. 
+* ë…¸ì´ì¦ˆê°€ ì—†ëŠ” ì´ìƒì ì¸ ì¼€ì´ìŠ¤ê°€ ì œê³µë˜ë©°, ë…¸ì´ì¦ˆëŠ” í•„ìš”ì— ë”°ë¼ ì‚¬ìš©í•˜ê±°ë‚˜ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ ì„¤ì •í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
+* ë¼ì´ì„¼ìŠ¤ëŠ” GNU ë²„ì „3ë¥¼ ë”°ë¦…ë‹ˆë‹¤. ì´ëŠ” ìžìœ ë¡­ê²Œ ì‚¬ìš©í•˜ë˜, ê°™ì€ ë¼ì´ì„¼ìŠ¤(GNUv3)ë¥¼ ëª…ì‹œí•˜ê³  ê·¸ ê²°ê³¼ë¬¼ì„ ê³µìœ í•´ì•¼ í•œë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•©ë‹ˆë‹¤.
+* ëª¨ë“  ì‹œë®¬ë ˆì´ì…˜ íŒŒì¼ì€ ìˆ˜ì •ì—†ì´ ë°”ë¡œ ë™ìž‘ ê°€ëŠ¥í•˜ë„ë¡ ì²´í¬í•˜ê³  ì˜¬ë¦½ë‹ˆë‹¤ë§Œ, ë¬¸ì œê°€ ìžˆì„ ê²½ìš° ë§ì”€í•´ì£¼ì„¸ìš”.
+* í˜¹ì‹œ ìž‘ë™ì´ ë˜ì§€ ì•ŠëŠ”ë‹¤ë©´, ë²„ì „ ë¬¸ì œì¼ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ë³¸ ì½”ë“œëŠ” ë§¤íŠ¸ëž©2019aì—ì„œ ìž‘ì„±ë˜ì—ˆìŠµë‹ˆë‹¤.
 
-## ÄÚµå ¼³¸í (Code Description in Korean)
-(°¢°¢ °°Àº ¼ýÀÚ¸¦ °¡Áö´Â SIMÆÄÀÏµéÀº °°Àº ±×·ì¿¡ ¼ÓÇÕ´Ï´Ù.)
+## ì½”ë“œ ì„¤ëª… (Code Description in Korean)
+(ê°ê° ê°™ì€ ìˆ«ìžë¥¼ ê°€ì§€ëŠ” SIMíŒŒì¼ë“¤ì€ ê°™ì€ ê·¸ë£¹ì— ì†í•©ë‹ˆë‹¤.)
 1. **SIM1_w2Dfeat_demo.m** 
-> SIM1Àº °£´ÜÇÑ 2DÈ¯°æ¿¡¼­ÀÇ Ä«¸Þ¶ó ½Ã¹Ä·¹ÀÌ¼Ç ÀÔ´Ï´Ù. 
-> Çìµù°ú ½Ã¾ß¹üÀ§ÀÇ Á¶°ÇÀ» ÅëÇØ °£´ÜÇÑ ÄÁ¼Á ÄÚµå¸¦ ÀÛ¼ºÇÏ¿´½À´Ï´Ù.
+> * SIM1ì€ ê°„ë‹¨í•œ 2Dí™˜ê²½ì—ì„œì˜ ì¹´ë©”ë¼ ì‹œë®¬ë ˆì´ì…˜ ìž…ë‹ˆë‹¤. 
+> * í—¤ë”©ê³¼ ì‹œì•¼ë²”ìœ„ì˜ ì¡°ê±´ì„ í†µí•´ ê°„ë‹¨í•œ ì»¨ì…‰ ì½”ë“œë¥¼ ìž‘ì„±í•˜ì˜€ìŠµë‹ˆë‹¤.
 
 2. **SIM2_w3Dfeat_demo.m** 
-> SIM2´Â 3D È¯°æ¿¡¼­ÀÇ Æ¯Â¡Á¡°ú Ä«¸Þ¶ó¿¡ ´ëÇÑ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù.
-> SIM2¿¡¼­´Â Æ¯Â¡Á¡°úÀÇ °Å¸®, Ä«¸Þ¶ó ¹æÇâ, ³»ºÎ ÆÄ¶ó¹ÌÅÍ Á¶°ÇÀ» °í·ÁÇØ¼­ Æ¯Â¡Á¡À» °í¸¨´Ï´Ù.
-> SIM2¿¡¼­´Â **Ä«¸Þ¶ó·Îº¿ÀÌ ÀÖ´Â 3DÈ¯°æ**°ú Æ¯Â¡Á¡µéÀÌ **Ä«¸Þ¶ó¿¡ ÀâÈù È­¸é**À» º¸¿©ÁÝ´Ï´Ù.
-> SIM2´Â ³ëÀÌÁî¸¦ Å°°í ²ø ¼ö ÀÖ´Â ÀÌ»óÀûÀÎ »óÈ²¿¡¼­ÀÇ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù. (¿Ö°î, ÇÈ¼¿ ¿¡·¯, ÃßÀû ½ÇÆÐ µî)
+> * SIM2ëŠ” 3D í™˜ê²½ì—ì„œì˜ íŠ¹ì§•ì ê³¼ ì¹´ë©”ë¼ì— ëŒ€í•œ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤.
+> * SIM2ì—ì„œëŠ” íŠ¹ì§•ì ê³¼ì˜ ê±°ë¦¬, ì¹´ë©”ë¼ ë°©í–¥, ë‚´ë¶€ íŒŒë¼ë¯¸í„° ì¡°ê±´ì„ ê³ ë ¤í•´ì„œ íŠ¹ì§•ì ì„ ê³ ë¦…ë‹ˆë‹¤.
+> * SIM2ì—ì„œëŠ” **ì¹´ë©”ë¼ë¡œë´‡ì´ ìžˆëŠ” 3Dí™˜ê²½**ê³¼ íŠ¹ì§•ì ë“¤ì´ **ì¹´ë©”ë¼ì— ìž¡ížŒ í™”ë©´**ì„ ë³´ì—¬ì¤ë‹ˆë‹¤.
+> * SIM2ëŠ” ë…¸ì´ì¦ˆë¥¼ í‚¤ê³  ëŒ ìˆ˜ ìžˆëŠ” ì´ìƒì ì¸ ìƒí™©ì—ì„œì˜ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤. (ì™œê³¡, í”½ì…€ ì—ëŸ¬, ì¶”ì  ì‹¤íŒ¨ ë“±)
 
-3. (*¿¹Á¤*) **SIM3_IMU_demo.m** 
-> ~~SIM3´Â ¿ª INS¿Í INS, IMU ¿¡·¯ ¸ðµ¨¿¡ ´ëÇÑ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù.~~ 
-4. (*¿¹Á¤*) **SIM4_WheelOdo_demo.m** 
-> ~~SIM4´Â ¿ª ÈÙ ¿Àµµ¸ÞÆ®¸®¿Í ¿¡·¯ ¸ðµ¨ÀÌ °í·ÁµÈ ÈÙ ¿Àµµ¸ÞÆ®¸®¿¡ ´ëÇÑ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù.~~
-5. (*¿¹Á¤*) **SIM5_Visual_odometry_demo.m** 
-> ~~SIM5´Â SIM2ÀÇ Ä«¸Þ¶ó¸¦ ÀÌ¿ëÇÑ ºñÁÖ¾ó ¿Àµµ¸ÞÆ®¸®¿¡ ´ëÇÑ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù.~~
+3. (*ì˜ˆì •*) **SIM3_IMU_demo.m** 
+> * ~~SIM3ëŠ” ì—­ INSì™€ INS, IMU ì—ëŸ¬ ëª¨ë¸ì— ëŒ€í•œ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤.~~ 
+4. (*ì˜ˆì •*) **SIM4_WheelOdo_demo.m** 
+> * ~~SIM4ëŠ” ì—­ íœ  ì˜¤ë„ë©”íŠ¸ë¦¬ì™€ ì—ëŸ¬ ëª¨ë¸ì´ ê³ ë ¤ëœ íœ  ì˜¤ë„ë©”íŠ¸ë¦¬ì— ëŒ€í•œ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤.~~
+5. (*ì˜ˆì •*) **SIM5_Visual_odometry_demo.m** 
+> * ~~SIM5ëŠ” SIM2ì˜ ì¹´ë©”ë¼ë¥¼ ì´ìš©í•œ ë¹„ì£¼ì–¼ ì˜¤ë„ë©”íŠ¸ë¦¬ì— ëŒ€í•œ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤.~~
 
-6. (*¼öÁ¤Áß*) **SIM6_Visual_inertial_odometry_demo.m** 
-> SIM6´Â SIM2ÀÇ Ä«¸Þ¶ó¿Í SIM3ÀÇ IMU¸¦ ÀÌ¿ëÇÑ ºñÁÖ¾ó-°ü¼º ¿Àµµ¸ÞÆ®¸®¿¡ ´ëÇÑ ½Ã¹Ä·¹ÀÌ¼ÇÀÔ´Ï´Ù.
-> SIM6´Â SIM2¿Í °°Àº ½Ã°¢È­¸¦ ÇÕ´Ï´Ù.
-> ~~SIM6´Â ÃßÀûµÈ Æ¯Â¡Á¡µéÀ» ½×¾Æ¼­ Æ®·¢À» ¸¸µì´Ï´Ù~~
-> ~~SIM6´Â ¸ÅÄªµÈ Æ¯Â¡Á¡¿¡ ´ëÇØ ¿¡ÇÇÆú¶ó Á¶°Ç¿¡ µû¸¥ ºñ¿ëÇÔ¼ö¸¦ °è»êÇÕ´Ï´Ù.~~
+6. (*ìˆ˜ì •ì¤‘*) **SIM6_Visual_inertial_odometry_demo.m** 
+> * SIM6ëŠ” SIM2ì˜ ì¹´ë©”ë¼ì™€ SIM3ì˜ IMUë¥¼ ì´ìš©í•œ ë¹„ì£¼ì–¼-ê´€ì„± ì˜¤ë„ë©”íŠ¸ë¦¬ì— ëŒ€í•œ ì‹œë®¬ë ˆì´ì…˜ìž…ë‹ˆë‹¤.
+> * SIM6ëŠ” SIM2ì™€ ê°™ì€ ì‹œê°í™”ë¥¼ í•©ë‹ˆë‹¤.
+> * ~~SIM6ëŠ” ì¶”ì ëœ íŠ¹ì§•ì ë“¤ì„ ìŒ“ì•„ì„œ íŠ¸ëž™ì„ ë§Œë“­ë‹ˆë‹¤~~
+> * ~~SIM6ëŠ” ë§¤ì¹­ëœ íŠ¹ì§•ì ì— ëŒ€í•´ ì—í”¼í´ë¼ ì¡°ê±´ì— ë”°ë¥¸ ë¹„ìš©í•¨ìˆ˜ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤.~~
 
 
