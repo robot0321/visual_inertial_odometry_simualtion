@@ -7,6 +7,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all; 
 rng(10);
+addpath('./functions');
 
 %% environment setting
 Nfeatures = 500; % the number of features
