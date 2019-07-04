@@ -18,7 +18,7 @@ These simulations provide the ideal case with **some noises** which can be turne
 > SIM2 apply 3D position and attitude in world, body, camera frame.
 > SIM2 selects features with distance, camera heading, intrinsic matrix constraint. 
 > SIM2 visualize the **camera-robot in 3D** dimension and **projected camera view**
-> SIM2 describe the **Ideal Case** without any distortion, pixel error, etc (if needed, see SIM6)
+> SIM2 describe the **Ideal Case** with on-off camera error model (ex. distortion, pixel error, miss tracking)
 
 3. (*not yet*) **SIM3_IMU_demo.m** 
 > ~~SIM3 is a simulation of inverse INS(path2IMUdata), INS(IMUdata2path) and IMU error model~~ 
@@ -55,7 +55,7 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 > SIM2는 3D 환경에서의 특징점과 카메라에 대한 시뮬레이션입니다.
 > SIM2에서는 특징점과의 거리, 카메라 방향, 내부 파라미터 조건을 고려해서 특징점을 고릅니다.
 > SIM2에서는 **카메라로봇이 있는 3D환경**과 특징점들이 **카메라에 잡힌 화면**을 보여줍니다.
-> SIM2는 왜곡이나 픽셀오차가 없는 이상적인 상황에서의 시뮬레이션입니다. (에러 모델 적용이 필요하다면 SIM6를 보세요)
+> SIM2는 노이즈를 키고 끌 수 있는 이상적인 상황에서의 시뮬레이션입니다. (왜곡, 픽셀 에러, 추적 실패 등)
 
 3. (*예정*) **SIM3_IMU_demo.m** 
 > ~~SIM3는 역 INS와 INS, IMU 에러 모델에 대한 시뮬레이션입니다.~~ 

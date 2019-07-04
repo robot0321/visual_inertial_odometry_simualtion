@@ -8,17 +8,21 @@
 % world frame (normal x,y,z), body frame (forward-x, right-y, down-z),
 % camera frame(forward-z, right-x, down-y) 
 % intrinsic matrix (K), extrinsic matrix (Tcb) applied
+% To make it ideal, check Variable 'isCamPixelError' and 'isDistorted'
 % 
-% Tuning Parameter: min/maxdist
+% External functions: world2pixel.m
+% Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental matrix),
+%                   distCoeff(& error), missTrackingRatio
 % 
 % Copyright with Jae Young Chung, robot0321 at github 
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
 rng(10);
+addpath('./functions');
 
 %% environment setting
-Nfeatures = 500; % the number of features
+Nfeatures = 700; % the number of features
 % x,y: 'Nfeatures' number of features, in range (-50,100)
 feat_position = [rand(2,Nfeatures)*100 - 25; rand(1,Nfeatures)*30-15];
 
@@ -56,6 +60,26 @@ K = [f, 0, cx;
 mindist = 2; % minimum distance from a feature to camera principal point
 maxdist = 40; % maximum distance "
 
+% noise on camera plane (pixel noise) about 0.1 ~ 2
+isCamPixelError = false;
+PixelErr = 1; 
+
+% Whether applying undistortion error//distCoeff: 
+% distortion error is applied at world2pixel() function
+isDistorted = false;
+distCoeff = [-0.5359, 0.3669, -0.0035, 0.0073, 0]; % example [k1, k2, p1, p2, k3]
+distortOrder = [4, 4]; % the order of distortion/undistortion(with error)
+errorFactor = [0.1, 0.072, 0.0007, 0.0014]; % at undistortion
+distortParams = struct('isDistorted', isDistorted, 'distCoeff', distCoeff, ...
+                       'distortOrder', distortOrder, 'errorFactor',errorFactor);
+
+% Miss-tracking ratio during tracking (like KLT miss-tracking)
+isMisstracked = true;
+missTrackingRatio = 0.05;
+                   
+% Distance Threshold in finding the 8-point RANSAC
+estFundaThreshold = 0.2;
+
 %% driving robot
 for i=1:size(tw_wb,2)
     % Current Robot Position and Attitute in World Frame 
@@ -72,7 +96,7 @@ for i=1:size(tw_wb,2)
     feat_cam_validx = feat_cam(3,:)>0; % camera attitude constraint
     
     % Camera Intrinsic Matrix & Pixel Range Constraint
-    feat_pixel = world2pixel(feat_position, K, Tcb*Tbw(:,:,i));
+    [feat_pixel,~] = world2pixelNnormal(feat_position, K, Tcb*Tbw(:,:,i), distortParams);
     feat_pixel_validx = feat_pixel(1,:)>0 & feat_pixel(1,:)<px ...
                         & feat_pixel(2,:)>0 & feat_pixel(2,:)<py; 
                     
@@ -90,10 +114,28 @@ for i=1:size(tw_wb,2)
     feat_intrsectValidx = intersect(feat_currValidx, feat_prevValidx); % features which are tracked 
 
     % Features on Camera Plane 
-    feat_prevTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k));
-    feat_currTrckPixel = world2pixel(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i));
-    feat_currNewPixel  = world2pixel(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i)); 
+    [feat_prevTrckPixel,~] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distortParams);
+    [feat_currTrckPixel,~] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distortParams);
+    [feat_currNewPixel,~]  = world2pixelNnormal(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distortParams); 
     % caution: not-tracked previous features are not drew (because not interested)
+    
+    % Adding Pixel Error if needed
+    if(isCamPixelError)
+        currNewPixelErr = PixelErr*randn(size(feat_currNewPixel));
+        currTrckPixelErr = PixelErr*randn(size(feat_currTrckPixel));
+        feat_currNewPixel = feat_currNewPixel + currNewPixelErr;
+        feat_currTrckPixel = feat_currTrckPixel + currTrckPixelErr;
+    end
+    
+    % Fundamental Matrix with RANSAC
+    if (size(feat_prevTrckPixel,2) >= 8)
+        [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
+                            'Method', 'RANSAC', 'DistanceThreshold', estFundThreshold);
+    else, valid_index = []; 
+    end
+    
+    % Testing Inlier Ratio
+    sum(valid_index)/size(feat_prevTrckPixel,2)
     
     %% draw figures
     figure(1); 
@@ -112,7 +154,9 @@ for i=1:size(tw_wb,2)
     if ~isempty(feat_intrsectValidx) % avoid the error when it is empty
         scatter(feat_currTrckPixel(1,:), feat_currTrckPixel(2,:),50,'r'); hold on;
         scatter(feat_prevTrckPixel(1,:), feat_prevTrckPixel(2,:),'g');
-        plot([feat_prevTrckPixel(1,:); feat_currTrckPixel(1,:)], [feat_prevTrckPixel(2,:); feat_currTrckPixel(2,:)],'-y');
+        % draw the valid(yellow) and invalid(black) optical flows
+        plot([feat_prevTrckPixel(1,valid_index); feat_currTrckPixel(1,valid_index)], [feat_prevTrckPixel(2,valid_index); feat_currTrckPixel(2,valid_index)],'-y');
+        plot([feat_prevTrckPixel(1,~valid_index); feat_currTrckPixel(1,~valid_index)], [feat_prevTrckPixel(2,~valid_index); feat_currTrckPixel(2,~valid_index)],'-k');
     end
     if ~isempty(feat_currNewValidx), scatter(feat_currNewPixel(1,:), feat_currNewPixel(2,:),50,'r'); end 
     
@@ -122,29 +166,4 @@ for i=1:size(tw_wb,2)
     
 %% For next step
     feat_prevValidx = feat_currValidx;
-end
-
-
-%% functions 
-function pixel2 = world2pixel(feat_world3, K, Tcw)
-    % Transformation from world to camera with intrinsic matrix 
-    if isempty(feat_world3)
-        pixel2 = []; return;
-    end
-    if (size(feat_world3,2)==3)
-        feat_world3 = feat_world3';
-    end
-    
-    % Transformation from world frame to camera frame
-    feat_camera4 = Tcw * [feat_world3; ones(1,size(feat_world3,2))];
-    
-    % From camera frame to normalized camera frame
-    % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] 
-    feat_normUndist = feat_camera4(1:3,:)./feat_camera4(3,:);
-
-    % From normalized camera frame to pixel frame 
-    % [x_nu, y_nu, 1] -- K* --> [x_pu, y_pu, 1]
-    feat_pixel = K*feat_normUndist;
-
-    pixel2 = feat_pixel(1:2,:);
 end
