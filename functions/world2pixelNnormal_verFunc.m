@@ -3,15 +3,16 @@
 % distortParams: struct('isDistorted', 'distCoeff', 'distortOrder','errorFactor');
 % Assuming there is an error on estimating the distCoeff
 
-function [pixel2, normal] = world2pixelNnormal(feat_world3, K, Tcw, distortParams)
+function [pixel2, normal] = world2pixelNnormal_verFunc(feat_world3_valid_idx, robotParams, cameraParams)
     % Transformation from world to camera with intrinsic matrix
     % features are arraged as 3xN matrix
+    feat_world3 = robotParams.feat_position(:, feat_world3_valid_idx);
     if isempty(feat_world3)
         pixel2 = []; normal = []; return;
     end
     
     % Transformation from world frame to camera frame
-    feat_camera4 = Tcw * [feat_world3; ones(1,size(feat_world3,2))];
+    feat_camera4 = cameraParams.Tcb * robotParams.Tbw * [feat_world3; ones(1,size(feat_world3,2))];
     
     % From camera frame to normalized camera frame
     % [Xc, Yc, Zc] -- /Zc --> [Xc/Zc, Yc/Zc, 1] = [x_nu, y_nu, 1] 
@@ -19,6 +20,7 @@ function [pixel2, normal] = world2pixelNnormal(feat_world3, K, Tcw, distortParam
 
     
     % Error modeling due tothe lens
+    distortParams = cameraParams.errorParams.distortParams;
     distCoeff_Dist = distortParams.distCoeff(1:distortParams.distortOrder(1)); % k1, k2, p1, p2, k3, k4, k5
     distCoeff_Undist = distortParams.distCoeff(1:distortParams.distortOrder(2)) ... % k1, k2, p1, p2
                         + distortParams.errorFactor.*randn(1,distortParams.distortOrder(2)); % adding Gaussian estimation Error
@@ -32,12 +34,12 @@ function [pixel2, normal] = world2pixelNnormal(feat_world3, K, Tcw, distortParam
         % From normalized camera frame to pixel frame 
         % [x_nu2, y_nu2, 1] -- K* --> [x_pu, y_pu, 1]
         normal = feat_normUndist2;
-        feat_pixel = K*feat_normUndist2;
+        feat_pixel = cameraParams.K * feat_normUndist2;
     else
         % From normalized camera frame to pixel frame 
         % [x_nu, y_nu, 1] -- K* --> [x_pu, y_pu, 1]
         normal = feat_normUndist;
-        feat_pixel = K*feat_normUndist;
+        feat_pixel = cameraParams.K * feat_normUndist;
     end
 
     pixel2 = feat_pixel(1:2,:);

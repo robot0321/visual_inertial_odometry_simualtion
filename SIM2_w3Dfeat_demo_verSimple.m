@@ -12,9 +12,9 @@
 % 
 % External functions: world2pixel.m
 % Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental matrix),
-%                   distCoeff(& error), missTrackingRatio
+%                   distCoeff(& error), misTrackingRatio
 % 
-% Copyright with Jae Young Chung, robot0321 at github 
+% Copyright ? 2011 JaeYoung Chung (robot0321@github) All Rights Reserved
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
@@ -40,7 +40,7 @@ pitch = zeros(size(heading));
 roll = pi*ones(size(heading));
 Rbw = angle2dcm(heading, pitch, roll); % dcm rotation matrix
 
-% Transformation matrix world to body T^w_b
+% Transformation matrix body to world T^b_w
 tb_bw = zeros(3,1,size(tw_wb,2));
 for i=1:size(tw_wb,2)
     tb_bw(:,1,i) = -Rbw(:,:,i)*tw_wb(:,i); 
@@ -63,6 +63,7 @@ maxdist = 40; % maximum distance "
 % noise on camera plane (pixel noise) about 0.1 ~ 2
 isCamPixelError = false;
 PixelErr = 1; 
+pixelErrParams = struct('isCamPixelError',isCamPixelError,'PixelErr',PixelErr);
 
 % Whether applying undistortion error//distCoeff: 
 % distortion error is applied at world2pixel() function
@@ -75,8 +76,14 @@ distortParams = struct('isDistorted', isDistorted, 'distCoeff', distCoeff, ...
 
 % Miss-tracking ratio during tracking (like KLT miss-tracking)
 isMisstracked = true;
-missTrackingRatio = 0.05;
+misTrackingRatio = 0.05;
+misTrackParams = struct('isMisstracked',isMisstracked,'misTrackingRatio',misTrackingRatio);
                    
+% organizing cameraParameters
+errorParams = struct('pixelErrParams',pixelErrParams,'distortParams',distortParams,'misTrackParams',misTrackParams);
+cameraParams = struct('Tcb',Tcb, 'focalLength',f, 'cx',cx, 'cy',cy,'px',px,'py',py, ...
+                    'mindist',mindist,'maxdist',maxdist, 'K',K, 'errorParams', errorParams);
+
 % Distance Threshold in finding the 8-point RANSAC
 estFundaThreshold = 0.2;
 
@@ -88,12 +95,13 @@ DeadTracks = cell(1,Nfeatures);
 for i=1:size(tw_wb,2)
     % Current Robot Position and Attitute in World Frame 
     currpos = tw_wb(:,i); % t^w_bw: 
-    curratt = Rbw; 
+    curratt = Rbw(:,:,i); 
     
     %% Feature Constraints
-%     data = struct('feat_position', feat_position, 'currpos', currpos, 'Tcw', Tcb*Tbw(:,:,i), ...
-%                   'mindist',mindist,'maxdist',maxdist, 'K',K, 'distortParams', distortParams, 'px',px,'py',py);
-%     feat_world_validx = featureConstraint({'distance','heading','pixelRange'}, data); 
+    % if you want to use function, use below 2 lines.
+%     robotParams = struct('feat_position',feat_position, 'currpos',currpos, 'Tbw',Tbw(:,:,i));
+%     feat_world_validx = featureConstraint({'distance','heading','pixelRange'}, robotParams, cameraParams);
+    
     % Distance Constraint
     feat_dist = sqrt(sum((feat_position - currpos).^2, 1)); 
     feat_dist_validx = feat_dist>mindist & feat_dist<maxdist; 
@@ -103,7 +111,7 @@ for i=1:size(tw_wb,2)
     feat_cam_validx = feat_cam(3,:)>0; % camera attitude constraint
     
     % Camera Intrinsic Matrix & Pixel Range Constraint
-    [feat_pixel,~] = world2pixelNnormal(feat_position, K, Tcb*Tbw(:,:,i), distortParams);
+    [feat_pixel,~] = world2pixelNnormal_verSimple(feat_position, K, Tcb*Tbw(:,:,i), distortParams);
     feat_pixel_validx = feat_pixel(1,:)>0 & feat_pixel(1,:)<px ...
                         & feat_pixel(2,:)>0 & feat_pixel(2,:)<py; 
                     
@@ -112,6 +120,7 @@ for i=1:size(tw_wb,2)
 
     %% Feature Matching & Optical Flow
     % Index saving for optical flow
+    
     k=i-1;
     if(i==1), feat_prevValidx = []; k=i; end
     feat_currValidx = feat_world_validx;
@@ -122,9 +131,9 @@ for i=1:size(tw_wb,2)
     feat_intrsectValidx = intersect(feat_currValidx, feat_prevValidx); % features which are tracked 
 
     % Features on Camera Plane 
-    [feat_prevTrckPixel,~] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distortParams);
-    [feat_currTrckPixel,~] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distortParams);
-    [feat_currNewPixel,~]  = world2pixelNnormal(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distortParams); 
+    [feat_prevTrckPixel,~] = world2pixelNnormal_verSimple(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distortParams);
+    [feat_currTrckPixel,~] = world2pixelNnormal_verSimple(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distortParams);
+    [feat_currNewPixel,~]  = world2pixelNnormal_verSimple(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distortParams); 
     % caution: not-tracked previous features are not drew (because not interested)
     
     % Adding Pixel Error if needed

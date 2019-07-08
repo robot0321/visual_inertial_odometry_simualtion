@@ -4,7 +4,7 @@
 % 2. Inverse INS (From world path & att To inertial data with gravity)
 % 3. INS (From inertial data To world path & att) with IMU error model
 % 
-% Copyright with Jae Young Chung, robot0321 at github 
+% Copyright ? 2011 JaeYoung Chung (robot0321@github) All Rights Reserved
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;

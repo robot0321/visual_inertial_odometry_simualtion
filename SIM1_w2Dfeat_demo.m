@@ -2,7 +2,7 @@
 % <SIM1 specification>
 % In 2-D, Features with angle and distance constraint
 % 
-% Copyright with Jae Young Chung, robot0321 at github 
+% Copyright ? 2011 JaeYoung Chung (robot0321@github) All Rights Reserved
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all; 
