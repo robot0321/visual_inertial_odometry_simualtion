@@ -46,7 +46,8 @@ These simulations provide the ideal case with **some noises** which can be turne
 - [ ] Path Generation from waypoint or system dynamics
 #### SIM2
 - [x] Adding N-straking Tracks
-- [ ] Adding miss-Tracking Ratio
+- [ ] Adding misTracking Ratio
+- [ ] Adding noise transfer process
 - [ ] Amending the structure to the real situation. (as like just have camera images -> tracking)
 - [ ] Amending the notation of the Translation/Rotation/Transformation vectors/Matrixes in the variables.
 #### SIM6

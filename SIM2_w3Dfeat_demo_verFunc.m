@@ -49,7 +49,6 @@ for currStep=1:size(Tbw,3)
     feat_world_validx = featureConstraint({'distance','heading','pixelRange'}, robotParams, cameraParams);
 
     %% Feature Tracking & Optical Flow
-    
     % Index saving for optical flow
     prevStep=currStep-1;
     if(currStep==1), feat_prevValidx = []; prevStep=currStep; end

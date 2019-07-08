@@ -75,9 +75,9 @@ distortParams = struct('isDistorted', isDistorted, 'distCoeff', distCoeff, ...
                        'distortOrder', distortOrder, 'errorFactor',errorFactor);
 
 % Miss-tracking ratio during tracking (like KLT miss-tracking)
-isMisstracked = true;
+isMistracked = false;
 misTrackingRatio = 0.05;
-misTrackParams = struct('isMisstracked',isMisstracked,'misTrackingRatio',misTrackingRatio);
+misTrackParams = struct('isMistracked',isMistracked,'misTrackingRatio',misTrackingRatio);
                    
 % organizing cameraParameters
 errorParams = struct('pixelErrParams',pixelErrParams,'distortParams',distortParams,'misTrackParams',misTrackParams);
@@ -126,7 +126,6 @@ for i=1:size(tw_wb,2)
     feat_currValidx = feat_world_validx;
     
     % build Tracks of tracked (exist on both prev&curr) features 
-    feat_prevDeadValidx = setdiff(feat_prevValidx, feat_currValidx);
     feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);    % new features 
     feat_intrsectValidx = intersect(feat_currValidx, feat_prevValidx); % features which are tracked 
 
@@ -144,6 +143,14 @@ for i=1:size(tw_wb,2)
         feat_currTrckPixel = feat_currTrckPixel + currTrckPixelErr;
     end
     
+    % Adding Mistracking Ratio
+    if(isMistracked)
+        misTrackNum = round(misTrackingRatio * size(feat_currTrckPixel, 2));
+        misTrackIdx = randperm(size(feat_currTrckPixel, 2), misTrackNum);
+        feat_currTrckPixel(:, misTrackIdx) = [px * rand(1,length(misTrackIdx)); py * rand(1,length(misTrackIdx))];
+    end
+    
+    
     % Fundamental Matrix with RANSAC
     if (size(feat_prevTrckPixel,2) >= 8)
         [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
@@ -154,24 +161,29 @@ for i=1:size(tw_wb,2)
     % Testing Inlier Ratio
     sum(valid_index)/size(feat_prevTrckPixel,2)
     
+    % misTrack index
+    feat_intrsectLiveIdx = feat_intrsectValidx(valid_index);
+    feat_prevDeadIdx = [setdiff(feat_prevValidx, feat_currValidx), feat_intrsectValidx(~valid_index)];
+    feat_currTrckPixelValid = feat_currTrckPixel(:,valid_index);
+    
     % Stacking Tracks with Features
-    for trackNumber = 1:numel(feat_intrsectValidx)
-        LiveTracks{feat_intrsectValidx(trackNumber)} = ...
-            struct('world_idx', LiveTracks{feat_intrsectValidx(trackNumber)}.world_idx, ...
-                   'frame', [LiveTracks{feat_intrsectValidx(trackNumber)}.frame, i], ...
-                   'pts', [LiveTracks{feat_intrsectValidx(trackNumber)}.pts, feat_currTrckPixel(:,trackNumber)]);
+    for currTrckIdx = 1:numel(feat_intrsectLiveIdx)
+        LiveTracks{feat_intrsectLiveIdx(currTrckIdx)} = ...
+            struct('world_idx', LiveTracks{feat_intrsectLiveIdx(currTrckIdx)}.world_idx, ...
+                   'frame', [LiveTracks{feat_intrsectLiveIdx(currTrckIdx)}.frame, i], ...
+                   'pts', [LiveTracks{feat_intrsectLiveIdx(currTrckIdx)}.pts, feat_currTrckPixelValid(:,currTrckIdx)]);
     end
-    for trackNumber = 1:numel(feat_currNewValidx)
-        LiveTracks{feat_currNewValidx(trackNumber)} = ...
-            struct('world_idx', feat_currNewValidx(trackNumber), 'frame', i, ...
-                   'pts', feat_currNewPixel(:,trackNumber));
+    for currNewIdx = 1:numel(feat_currNewValidx)
+        LiveTracks{feat_currNewValidx(currNewIdx)} = ...
+            struct('world_idx', feat_currNewValidx(currNewIdx), 'frame', i, ...
+                   'pts', feat_currNewPixel(:, currNewIdx));
     end
     
     % Moving Ended Tracks
     DeadTracks = cell(1,Nfeatures);
-    for trackNumber = 1:numel(feat_prevDeadValidx)
-        DeadTracks{feat_prevDeadValidx(trackNumber)} = LiveTracks{feat_prevDeadValidx(trackNumber)};
-        LiveTracks{feat_prevDeadValidx(trackNumber)} = [];
+    for prevDeadIdx = 1:numel(feat_prevDeadIdx)
+        DeadTracks{feat_prevDeadIdx(prevDeadIdx)} = LiveTracks{feat_prevDeadIdx(prevDeadIdx)};
+        LiveTracks{feat_prevDeadIdx(prevDeadIdx)} = [];
     end
     
     
@@ -220,6 +232,6 @@ for i=1:size(tw_wb,2)
     hold off;
     
 %% For next step
-    feat_prevValidx = feat_currValidx;
+    feat_prevValidx = [feat_intrsectValidx(valid_index), feat_currNewValidx];
     
 end
