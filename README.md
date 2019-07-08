@@ -24,9 +24,9 @@ These simulations provide the ideal case with **some noises** which can be turne
 > * SIM2 describes the **Ideal Case** with on-off camera error model (ex. distortion, pixel error, miss tracking)
 > * SIM2 saves the results of feature tracking and tracking failure (Variable: LiveTrack, DeadTrack)\
 
-> * verSimple.m and verFunc.m are expected to operate samely. Please let me know if you find any faults.
-> * SIM2...verSimple.m has a simple structure which rally has functions except world2pixelNnormal_verSimple() function. This form can help somebody to read the whole code.
-> * SIm2...verFunc.m has a structure which replace the parts of scripts to functions. This form can help somebody to get the outline of the simulation.
+> * **verSimple.m** and **verFunc.m** are expected to operate samely. Please let me know if you find any faults.
+> * **SIM2...verSimple.m** has a simple structure which rally has functions except world2pixelNnormal_verSimple() function. This form can help somebody to read the whole code.
+> * **SIM2...verFunc.m** has a structure which replace the parts of scripts to functions. This form can help somebody to get the outline of the simulation.
 
 3. (*not yet*) **SIM3_IMU_demo.m** 
 > * ~~SIM3 is a simulation of inverse INS(path2IMUdata), INS(IMUdata2path) and IMU error model~~ 
@@ -83,9 +83,9 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 > * SIM2는 노이즈를 키고 끌 수 있는 이상적인 상황에서의 시뮬레이션입니다. (왜곡, 픽셀 에러, 추적 실패 등)
 > * SIM2에서는 feature들을 추적하고 있는 결과를 LiveTrack에 기록하며, 추적이 끝난 결과를 DeadTrack에 (한 스텝 동안만) 저장합니다. (변수 LiveTrack, DeadTrack)
 
-> * Simple버전과 Func버전은 기능 상의 차이가 없도록 작성되었습니다. 만약 발견한다면 코멘트 부탁드립니다.
-> * SIM2...verSimple.m는 함수를 가급적 포함하지 않고 통짜로 작성된 버전입니다. 이런 방식은 코드를 전부 읽고 파악하는데 도움이 될 수 있습니다.
-> * SIm2...verFunc.m는 함수로 기능을 묶어서 보기 편하게 대체한 버전입니다. 이런 방식은 개략적인 구조를 파악하는데 도움이 될 수 있습니다.
+> * **verSimple.m**과 **verFunc.m**은 기능 상의 차이가 없도록 작성되었습니다. 만약 발견한다면 코멘트 부탁드립니다.
+> * **SIM2...verSimple.m**는 함수를 가급적 포함하지 않고 통짜로 작성된 버전입니다. 이런 방식은 코드를 전부 읽고 파악하는데 도움이 될 수 있습니다.
+> * **SIM2...verFunc.m**는 함수로 기능을 묶어서 보기 편하게 대체한 버전입니다. 이런 방식은 개략적인 구조를 파악하는데 도움이 될 수 있습니다.
 
 3. (*예정*) **SIM3_IMU_demo.m** 
 > * ~~SIM3는 역 INS와 INS, IMU 에러 모델에 대한 시뮬레이션입니다.~~ 
