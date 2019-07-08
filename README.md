@@ -10,6 +10,7 @@ These simulations provide the ideal case with **some noises** which can be turne
 * I checked all the demo files whether it can be runned without any amendation, but the MATLAB version can be critical 
 * I made this simulations on MATLAB 2019a
 
+
 ## Code Description 
 (Each SIMx-files are in a group)
 1. **SIM1_w2Dfeat_demo.m** 
@@ -33,11 +34,27 @@ These simulations provide the ideal case with **some noises** which can be turne
 6. (*Editing*) **SIM6_Visual_inertial_odometry_demo.m** 
 > * SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and ~~IMU in SIM3~~
 > * SIM6 visualize as same as SIM2
-> * ~~SIM6 makes feature Tracks on image plane~~
-> * ~~SIM6 calculate epipoar constraint cost to with matched features~~
+> * SIM6 calculate epipoar constraint cost to with matched features
+
+
+## To Do List
+##### Common
+- [ ] Path Generation from waypoint or system dynamics
+##### SIM2
+- [x] Adding N-straking Tracks
+- [ ] Adding miss-Tracking Ratio
+- [ ] Amending the structure to the real situation. (as like just have camera images -> tracking)
+- [ ] Amending the notation of the Translation/Rotation/Transformation vectors/Matrixes in the variables.
+##### SIM6
+- [ ] SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and IMU in SIM3
+- [ ] SIM6 visualize as same as SIM2
+- [x] SIM6 calculate epipoar constraint cost to with matched features
+
 
 ## Liscence
 GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+
+*****
 
 *****
 
@@ -71,7 +88,6 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 6. (*수정중*) **SIM6_Visual_inertial_odometry_demo.m** 
 > * SIM6는 SIM2의 카메라와 SIM3의 IMU를 이용한 비주얼-관성 오도메트리에 대한 시뮬레이션입니다.
 > * SIM6는 SIM2와 같은 시각화를 합니다.
-> * ~~SIM6는 추적된 특징점들을 쌓아서 트랙을 만듭니다~~
-> * ~~SIM6는 매칭된 특징점에 대해 에피폴라 조건에 따른 비용함수를 계산합니다.~~
+> * SIM6는 매칭된 특징점에 대해 에피폴라 조건에 따른 비용함수를 계산합니다.
 
 
