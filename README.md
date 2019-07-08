@@ -38,14 +38,14 @@ These simulations provide the ideal case with **some noises** which can be turne
 
 
 ## To Do List
-##### Common
+#### Common
 - [ ] Path Generation from waypoint or system dynamics
-##### SIM2
+#### SIM2
 - [x] Adding N-straking Tracks
 - [ ] Adding miss-Tracking Ratio
 - [ ] Amending the structure to the real situation. (as like just have camera images -> tracking)
 - [ ] Amending the notation of the Translation/Rotation/Transformation vectors/Matrixes in the variables.
-##### SIM6
+#### SIM6
 - [ ] SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and IMU in SIM3
 - [ ] SIM6 visualize as same as SIM2
 - [x] SIM6 calculate epipoar constraint cost to with matched features
@@ -56,9 +56,9 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 
 *****
 
-*****
+# (모노) 비주얼 { 관성 | 휠 } 오도메트리 시뮬레이션 (Title in Korean)
 
-### 내용 설명 (Guidelines in Korean)
+## 내용 설명 (Guidelines in Korean)
 * (모노) 비주얼 { 관성 | 휠 } 오도메트리에 대한 매트랩 시뮬레이션 입니다. 
 * 노이즈가 없는 이상적인 케이스가 제공되며, 노이즈는 필요에 따라 사용하거나 사용하지 않도록 설정할 수 있습니다.
 * 라이센스는 GNU 버전3를 따릅니다. 이는 자유롭게 사용하되, 같은 라이센스(GNUv3)를 명시하고 그 결과물을 공유해야 한다는 것을 의미합니다.
