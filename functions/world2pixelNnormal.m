@@ -4,12 +4,10 @@
 % Assuming there is an error on estimating the distCoeff
 
 function [pixel2, normal] = world2pixelNnormal(feat_world3, K, Tcw, distortParams)
-    % Transformation from world to camera with intrinsic matrix 
+    % Transformation from world to camera with intrinsic matrix
+    % features are arraged as 3xN matrix
     if isempty(feat_world3)
         pixel2 = []; normal = []; return;
-    end
-    if (size(feat_world3,2)==3)
-        feat_world3 = feat_world3';
     end
     
     % Transformation from world frame to camera frame

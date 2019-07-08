@@ -80,6 +80,10 @@ missTrackingRatio = 0.05;
 % Distance Threshold in finding the 8-point RANSAC
 estFundaThreshold = 0.2;
 
+% Feature Tracks
+LiveTracks = cell(1,Nfeatures);
+DeadTracks = cell(1,Nfeatures);
+
 %% driving robot
 for i=1:size(tw_wb,2)
     % Current Robot Position and Attitute in World Frame 
@@ -87,6 +91,9 @@ for i=1:size(tw_wb,2)
     curratt = Rbw; 
     
     %% Feature Constraints
+%     data = struct('feat_position', feat_position, 'currpos', currpos, 'Tcw', Tcb*Tbw(:,:,i), ...
+%                   'mindist',mindist,'maxdist',maxdist, 'K',K, 'distortParams', distortParams, 'px',px,'py',py);
+%     feat_world_validx = featureConstraint({'distance','heading','pixelRange'}, data); 
     % Distance Constraint
     feat_dist = sqrt(sum((feat_position - currpos).^2, 1)); 
     feat_dist_validx = feat_dist>mindist & feat_dist<maxdist; 
@@ -106,10 +113,11 @@ for i=1:size(tw_wb,2)
     %% Feature Matching & Optical Flow
     % Index saving for optical flow
     k=i-1;
-    if(i==1), feat_prevValidx = feat_world_validx; k=i; end
+    if(i==1), feat_prevValidx = []; k=i; end
     feat_currValidx = feat_world_validx;
     
     % build Tracks of tracked (exist on both prev&curr) features 
+    feat_prevDeadValidx = setdiff(feat_prevValidx, feat_currValidx);
     feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);    % new features 
     feat_intrsectValidx = intersect(feat_currValidx, feat_prevValidx); % features which are tracked 
 
@@ -130,12 +138,33 @@ for i=1:size(tw_wb,2)
     % Fundamental Matrix with RANSAC
     if (size(feat_prevTrckPixel,2) >= 8)
         [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
-                            'Method', 'RANSAC', 'DistanceThreshold', estFundThreshold);
+                            'Method', 'RANSAC', 'DistanceThreshold', estFundaThreshold);
     else, valid_index = []; 
     end
     
     % Testing Inlier Ratio
     sum(valid_index)/size(feat_prevTrckPixel,2)
+    
+    % Stacking Tracks with Features
+    for trackNumber = 1:numel(feat_intrsectValidx)
+        LiveTracks{feat_intrsectValidx(trackNumber)} = ...
+            struct('world_idx', LiveTracks{feat_intrsectValidx(trackNumber)}.world_idx, ...
+                   'frame', [LiveTracks{feat_intrsectValidx(trackNumber)}.frame, i], ...
+                   'pts', [LiveTracks{feat_intrsectValidx(trackNumber)}.pts, feat_currTrckPixel(:,trackNumber)]);
+    end
+    for trackNumber = 1:numel(feat_currNewValidx)
+        LiveTracks{feat_currNewValidx(trackNumber)} = ...
+            struct('world_idx', feat_currNewValidx(trackNumber), 'frame', i, ...
+                   'pts', feat_currNewPixel(:,trackNumber));
+    end
+    
+    % Moving Ended Tracks
+    DeadTracks = cell(1,Nfeatures);
+    for trackNumber = 1:numel(feat_prevDeadValidx)
+        DeadTracks{feat_prevDeadValidx(trackNumber)} = LiveTracks{feat_prevDeadValidx(trackNumber)};
+        LiveTracks{feat_prevDeadValidx(trackNumber)} = [];
+    end
+    
     
     %% draw figures
     figure(1); 
@@ -164,6 +193,24 @@ for i=1:size(tw_wb,2)
     axis equal; hold off;
     axis([0, 640, 0, 480]);
     
+    figure(2);
+    % LiveTracks
+    subplot(1,2,1);
+    for j = 1:length(LiveTracks)
+        if(~isempty(LiveTracks{j})), plot(LiveTracks{j}.pts(1,:), LiveTracks{j}.pts(2,:),'-og'); hold on; end
+    end
+    title('Live Tracks');
+    hold off;
+    
+    % DeadTracks
+    subplot(1,2,2);
+    for j = 1:length(DeadTracks)
+        if(~isempty(DeadTracks{j})), plot(DeadTracks{j}.pts(1,:), DeadTracks{j}.pts(2,:), '-or'); hold on; end
+    end
+    title('Dead Tracks');
+    hold off;
+    
 %% For next step
     feat_prevValidx = feat_currValidx;
+    
 end
