@@ -12,6 +12,11 @@ These simulations provide the ideal case with **some noises** which can be turne
 
 
 ## Code Description 
+
+### Caution: Before Using This Simulation
+#### Have to set the 'dual_left_monitor' variable to show figures on your monitor
+#### Have to select the simulation trajectory with 'trajtype' variable. 
+
 (Each SIMx-files are in a group)
 1. **SIM1_w2Dfeat_demo.m** 
 > * SIM1 is a simple 2D simulation of camera. Using features with angle and distance constraint.
@@ -24,12 +29,11 @@ These simulations provide the ideal case with **some noises** which can be turne
 > * SIM2 describes the **Ideal Case** with on-off camera error model (ex. distortion, pixel error, miss tracking)
 > * SIM2 saves the results of feature tracking and tracking failure (Variable: LiveTrack, DeadTrack)\
 
-> * **verSimple.m** and **verFunc.m** are expected to operate samely. Please let me know if you find any faults.
-> * **SIM2...verSimple.m** has a simple structure which rally has functions except world2pixelNnormal_verSimple() function. This form can help somebody to read the whole code.
-> * **SIM2...verFunc.m** has a structure which replace the parts of scripts to functions. This form can help somebody to get the outline of the simulation.
+> * **...verSimple.m** is removed.
+
 
 3. (*not yet*) **SIM3_IMU_demo.m** 
-> * ~~SIM3 is a simulation of inverse INS(path2IMUdata), INS(IMUdata2path) and IMU error model~~ 
+> * ~~SIM3 is a simulation of inverse INS(Traj2IMUdata), INS(IMUdata2Traj) and IMU error model~~ 
 4. (*not yet*) **SIM4_WheelOdo_demo.m** 
 > * ~~SIM4 is a simulation of inverse WheelOdometry and WheelOdometry with error model~~
 5. (*not yet*) **SIM5_Visual_odometry_demo.m** 
@@ -43,10 +47,11 @@ These simulations provide the ideal case with **some noises** which can be turne
 
 ## To Do List
 #### Common
-- [ ] Path Generation from waypoint or system dynamics
+- [ ] Trajectory Generation from waypoint or system dynamics
+- [x] Adding some trajectory examples
 #### SIM2
 - [x] Adding N-straking Tracks
-- [ ] Adding misTracking Ratio
+- [x] Adding misTracking Ratio
 - [ ] Adding noise transfer process
 - [ ] Amending the structure to the real situation. (as like just have camera images -> tracking)
 - [ ] Amending the notation of the Translation/Rotation/Transformation vectors/Matrixes in the variables.
@@ -71,6 +76,11 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 * 혹시 작동이 되지 않는다면, 버전 문제일 수 있습니다. 본 코드는 매트랩2019a에서 작성되었습니다.
 
 ## 코드 설명 (Code Description in Korean)
+
+### 주의: 이 시뮬레이션을 사용하기 전에
+#### figure를 보기 위해서는 'dual_left_monitor' 변수를 확인하세요
+#### 시뮬레이션을 원하는 실험 경로를 'trajtype'에서 확인하세요 
+
 (각각 같은 숫자를 가지는 SIM파일들은 같은 그룹에 속합니다.)
 1. **SIM1_w2Dfeat_demo.m** 
 > * SIM1은 간단한 2D환경에서의 카메라 시뮬레이션 입니다. 
@@ -83,9 +93,7 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 > * SIM2는 노이즈를 키고 끌 수 있는 이상적인 상황에서의 시뮬레이션입니다. (왜곡, 픽셀 에러, 추적 실패 등)
 > * SIM2에서는 feature들을 추적하고 있는 결과를 LiveTrack에 기록하며, 추적이 끝난 결과를 DeadTrack에 (한 스텝 동안만) 저장합니다. (변수 LiveTrack, DeadTrack)
 
-> * **verSimple.m**과 **verFunc.m**은 기능 상의 차이가 없도록 작성되었습니다. 만약 발견한다면 코멘트 부탁드립니다.
-> * **SIM2...verSimple.m**는 함수를 가급적 포함하지 않고 통짜로 작성된 버전입니다. 이런 방식은 코드를 전부 읽고 파악하는데 도움이 될 수 있습니다.
-> * **SIM2...verFunc.m**는 함수로 기능을 묶어서 보기 편하게 대체한 버전입니다. 이런 방식은 개략적인 구조를 파악하는데 도움이 될 수 있습니다.
+> * **...verSimple.m**은 제거되었습니다.
 
 3. (*예정*) **SIM3_IMU_demo.m** 
 > * ~~SIM3는 역 INS와 INS, IMU 에러 모델에 대한 시뮬레이션입니다.~~ 

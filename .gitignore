@@ -1,0 +1,7 @@
+dumped/
+trajectories/full*
+SIM2_w3Dfeat_demo_verSimple.m
+world2pixelNnormal_verSimple.m
+TODOLIST.md
+*.asv
+/*/*.asv
