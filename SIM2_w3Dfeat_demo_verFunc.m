@@ -32,7 +32,7 @@ end
 
 %% environment setting
 % Trajectory LIST --> select among 'traj1', 'traj2', 'traj3'
-trajtype = 'traj3';
+trajtype = 'traj1';
 % Get the trajectory parameters from its type.   
 trajParams = trajSettings(trajtype); % Set the proper options fitted with the selected trajectory
 
@@ -42,13 +42,13 @@ trajParams = trajSettings(trajtype); % Set the proper options fitted with the se
 % Generating features along the trajectory
 feat_position = featureGeneration(traj_world_wb, trajParams.featGenParams);
 
-% draw the trajectory
-figure(10); plot3(traj_world_wb(1,:),traj_world_wb(2,:),traj_world_wb(3,:),'r'); hold on;
-scatter3(traj_world_wb(1,1),traj_world_wb(2,1),traj_world_wb(3,1),50,'g','filled'); 
-scatter3(traj_world_wb(1,end),traj_world_wb(2,end),traj_world_wb(3,end),50,'y','filled');
-% draw the features
-scatter3(feat_position(1,:),feat_position(2,:),feat_position(3,:),'b');
-legend('path', 'start', 'stop', 'feats'); axis equal; grid on; hold off;
+% % draw the features
+% figure(10); scatter3(feat_position(1,:),feat_position(2,:),feat_position(3,:),'b'); hold on;
+% % draw the trajectory
+% plot3(traj_world_wb(1,:),traj_world_wb(2,:),traj_world_wb(3,:),'LineWidth',2,'Color','red'); hold on;
+% scatter3(traj_world_wb(1,1),traj_world_wb(2,1),traj_world_wb(3,1),50,'g','filled'); 
+% scatter3(traj_world_wb(1,end),traj_world_wb(2,end),traj_world_wb(3,end),50,'y','filled');
+% legend( 'feats', 'path', 'start', 'stop'); axis equal; grid on; hold off;
 
 %% camera setting
 % camera parameter setting, 
