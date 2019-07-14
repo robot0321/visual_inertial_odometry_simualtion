@@ -78,18 +78,35 @@ for currStep=startIdx:size(Tbw,3)
     feat_prevDeadValidx = setdiff(feat_prevValidx, feat_currValidx);
     feat_currNewValidx = setdiff(feat_currValidx, feat_prevValidx);    % new features 
     feat_intrsectValidx = intersect(feat_currValidx, feat_prevValidx); % features which are tracked 
-
+    feat_intrscPrevIdx = feat_intrsectValidx;
+    feat_intrscCurrIdx = feat_intrsectValidx;
+    
+    % mistracked (mismatched ?) feature 
+    if(cameraParams.errorParams.misTrackParams.isMistracked && ~isempty(feat_intrsectValidx))
+        numMistrackedFeat = round(length(feat_intrsectValidx) * cameraParams.errorParams.misTrackParams.mistrackingRatio);
+        pp = randperm(length(feat_intrsectValidx), numMistrackedFeat);
+        newCandidate = [feat_intrsectValidx(pp), feat_currNewValidx];
+        newpp = randperm(length(newCandidate), numMistrackedFeat);
+        feat_intrscCurrIdx(pp) = newCandidate(newpp);
+        [asdf, currnewadf,~] = intersect(feat_currNewValidx, newCandidate(newpp));
+        if(~isempty(asdf))
+            feat_currNewValidx(currnewadf) = [];
+        end
+    end
+    % for the continuous tracking, mistracking is done on the existed feature, not ramdomly made feature.
+    
+    
     % Features on Camera Plane 
     robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,prevStep));
-    [feat_prevTrckPixel,~] = world2pixelNnormal_verFunc(feat_intrsectValidx, robotParamsPrev, cameraParams);
-    [feat_currTrckPixel,~] = world2pixelNnormal_verFunc(feat_intrsectValidx, robotParams, cameraParams);
+    [feat_prevTrckPixel,~] = world2pixelNnormal_verFunc(feat_intrscPrevIdx, robotParamsPrev, cameraParams); % intersectValidx = feat_prevValidx(:, feat_intrscPrevIdx)
+    [feat_currTrckPixel,~] = world2pixelNnormal_verFunc(feat_intrscCurrIdx, robotParams, cameraParams);      % intersectValidx = feat_currValidx(:, feat_intrscCurrIdx)
     [feat_currNewPixel,~]  = world2pixelNnormal_verFunc(feat_currNewValidx,  robotParams, cameraParams); 
     % caution: not-tracked previous features are not drew (because not interested)
     
     % Adding Pixel Error if needed
     if(cameraParams.errorParams.pixelErrParams.isCamPixelError)
-        currNewPixelErr = PixelErr*randn(size(feat_currNewPixel));
-        currTrckPixelErr = PixelErr*randn(size(feat_currTrckPixel));
+        currNewPixelErr = cameraParams.errorParams.pixelErrParams.PixelErr * randn(size(feat_currNewPixel));
+        currTrckPixelErr = cameraParams.errorParams.pixelErrParams.PixelErr * randn(size(feat_currTrckPixel));
         feat_currNewPixel = feat_currNewPixel + currNewPixelErr;
         feat_currTrckPixel = feat_currTrckPixel + currTrckPixelErr;
     end
@@ -100,31 +117,45 @@ for currStep=startIdx:size(Tbw,3)
                             'Method', 'RANSAC', 'DistanceThreshold', estFundaThreshold);
     else, valid_index = ones(1,size(feat_currTrckPixel,2)); 
     end
-    
+
     % Testing Inlier Ratio
     sum(valid_index)/size(feat_prevTrckPixel,2)
     
-    % Stacking Tracks with Features
-    for trackNumber = 1:numel(feat_intrsectValidx)
-        LiveTracks{feat_intrsectValidx(trackNumber)} = ...
-            struct('world_idx', LiveTracks{feat_intrsectValidx(trackNumber)}.world_idx, ...
-                   'frame', [LiveTracks{feat_intrsectValidx(trackNumber)}.frame, currStep], ...
-                   'pts', [LiveTracks{feat_intrsectValidx(trackNumber)}.pts, feat_currTrckPixel(:,trackNumber)]);
-    end
-    for trackNumber = 1:numel(feat_currNewValidx)
-        LiveTracks{feat_currNewValidx(trackNumber)} = ...
-            struct('world_idx', feat_currNewValidx(trackNumber), 'frame', currStep, ...
-                   'pts', feat_currNewPixel(:,trackNumber));
+    % update index with the results of RANSAC
+    feat_prevDeadValidx = [feat_prevDeadValidx, feat_intrscPrevIdx(~valid_index)];
+%     feat_intrscPrevIdx = feat_intrscPrevIdx(valid_index);
+%     feat_intrscCurrIdx = feat_intrscCurrIdx(valid_index);
+    
+    % Stacking existed Tracks with new features on the LiveTracks
+    vvvv = find(valid_index);
+    tempLiveTracks = {};
+    for trackNumber = 1:numel(vvvv)
+        tempLiveTracks{feat_intrscCurrIdx(vvvv(trackNumber))} = ...
+            struct('world_idx', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.world_idx, feat_intrscCurrIdx(vvvv(trackNumber))], ...
+                   'frame', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.frame, currStep], ...
+                   'pts', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.pts, feat_currTrckPixel(:,vvvv(trackNumber))]);
+       % if the tracking world index is changed, data on the previous index have to be deleted
+%        if(feat_intrscCurrIdx(vvvv(trackNumber))~=feat_intrscPrevIdx(vvvv(trackNumber)))
+%            LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}=[]; 
+%        end
     end
     
-    % Moving Ended Tracks
+    % Stacking newTracks on the LiveTracks
+    for trackNumber = 1:numel(feat_currNewValidx)
+        tempLiveTracks{feat_currNewValidx(trackNumber)} = ...
+            struct('world_idx', feat_currNewValidx(trackNumber), ...
+                  'frame', currStep, ...
+                  'pts', feat_currNewPixel(:,trackNumber));
+    end
+    
+    % Moving ended tracks from LiveTracks to DeadTracks 
     DeadTracks = cell(1,trajParams.featGenParams.Nfeatures);
     for trackNumber = 1:numel(feat_prevDeadValidx)
         DeadTracks{feat_prevDeadValidx(trackNumber)} = LiveTracks{feat_prevDeadValidx(trackNumber)};
-        LiveTracks{feat_prevDeadValidx(trackNumber)} = [];
+%         tempLiveTracks{feat_prevDeadValidx(trackNumber)} = [];
     end
     
-    
+    LiveTracks = tempLiveTracks;
     %% draw figures
     figure(1); 
     % 3-D features, robot, path and the features in view
@@ -135,9 +166,9 @@ for currStep=startIdx:size(Tbw,3)
          [traj_world_wb(2,currStep)*ones(1,size(feat_world_validx,2)); feat_position(2,feat_world_validx)], ...
          [traj_world_wb(3,currStep)*ones(1,size(feat_world_validx,2)); feat_position(3,feat_world_validx)],'k'); % view ray
     scatter3(traj_world_wb(1,currStep),traj_world_wb(2,currStep),traj_world_wb(3,currStep), 50,'g','filled'); % robot position
-    yaw = dcm2angle(Tbw(1:3,1:3,currStep));
-    quiver3(traj_world_wb(1,currStep),traj_world_wb(2,currStep),traj_world_wb(3,currStep), ...
-             3*cos(yaw*pi/180),3*sin(yaw*pi/180),yaw*0); % robot heading
+%     yaw = dcm2angle(Tbw(1:3,1:3,currStep));
+%     quiver3(traj_world_wb(1,currStep),traj_world_wb(2,currStep),traj_world_wb(3,currStep), ...
+%              3*cos(yaw*pi/180),3*sin(yaw*pi/180),yaw*0); % robot heading
     axis equal; grid on; hold off; xlabel('x'); ylabel('y');
     
     subplot(2,2,2); 
@@ -172,7 +203,9 @@ for currStep=startIdx:size(Tbw,3)
     title('Dead Tracks');
     hold off; axis([0, cameraParams.px, 0, cameraParams.py]);
     set(gca,'XAxisLocation','top','YAxisLocation','left','ydir','reverse');
+    
+    drawnow();
 %% For next step
-    feat_prevValidx = feat_currValidx;
+    feat_prevValidx = sort([feat_intrscCurrIdx(vvvv), feat_currNewValidx]);
     
 end

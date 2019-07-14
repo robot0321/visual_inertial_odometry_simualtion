@@ -24,10 +24,10 @@ function cameraParams = cameraSettings(distRange)
     distortParams = struct('isDistorted', isDistorted, 'distCoeff', distCoeff, ...
                            'distortOrder', distortOrder, 'errorFactor',errorFactor);
 
-    % Miss-tracking ratio during tracking (like KLT miss-tracking)
-    isMisstracked = true;
+    % Mistracking ratio during tracking (like KLT mistracking)
+    isMistracked = false;
     misTrackingRatio = 0.05;
-    misTrackParams = struct('isMisstracked',isMisstracked,'misTrackingRatio',misTrackingRatio);
+    misTrackParams = struct('isMistracked',isMistracked,'mistrackingRatio',misTrackingRatio);
 
     % Collecting error Parameters
     errorParams = struct('pixelErrParams',pixelErrParams,'distortParams',distortParams,'misTrackParams',misTrackParams);

@@ -112,7 +112,7 @@ for i=1:size(tw_wb,2)
     
     % Features on Camera Plane 
     [feat_prevTrckPixel, feat_prevTrckNormal] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,k), distortParams);
-    feat_currNewPixel                         = world2pixelNnormal(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distortParams);  % features which is newly appeared 
+    feat_currNewPixel                      = world2pixelNnormal(feat_position(:,feat_currNewValidx), K, Tcb*Tbw(:,:,i), distortParams);  % features which is newly appeared 
     [feat_currTrckPixel, feat_currTrckNormal] = world2pixelNnormal(feat_position(:,feat_intrsectValidx), K, Tcb*Tbw(:,:,i), distortParams);
     % caution: not-tracked previous features are not drew (because not interested)
     
