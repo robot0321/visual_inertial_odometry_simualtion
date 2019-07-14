@@ -1,3 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% <world2pixelNnormal_verFunc.m specification>
+% 1. Calculating the coordinate of the feauture in world frame from the camera parameters and current robot(body) status 
+% 2. Apply or not camera lens distortion as the setting of the cameraParams.errorParams.distortParams
+% 3. undistortion error is represented as the Gaussian form of distortParams.errorFactor
+% 4. undistortion is done iteratively
+% 
+% INPUT   : feature position in world frame, robotParams, cameraParams
+% OUTPUT  : the coordiante in image plane [x_pu, y_pu] and the coordinate in the normalized camera frame [x_nu, y_nu, 1]
+% FUNCTION: Transfer the features from world frame to image plane and normalized camera frame
+% 
+% Tuning Parameter: NONE
+% 
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %% transformation from world frame to pixel frame
 % world frame --T^c_w--> camera frame --./Z--> normal camera frame --intrinsic K--> pixel frame
 % distortParams: struct('isDistorted', 'distCoeff', 'distortOrder','errorFactor');

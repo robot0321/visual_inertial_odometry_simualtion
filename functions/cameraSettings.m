@@ -1,3 +1,22 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% <cameraSettings.m specification>
+% 1. Set the camera parameters (Tcb, focal length, principle point, pixel range, intrinsic matrix)
+% 2. Set error parameters (pixel err, distortion, mistracking) including whether use or not 
+%    
+% INPUT   : distRange(which includes mindist and maxdist) to set in the cameraParams
+% OUTPUT  : cameraParams including errorParams
+% FUNCTION: Set the camera in/extrinsic parameters and error parameters
+% 
+% Tuning Parameter: all the parameters
+%                  1) camera parameters (Tcb, fx, fy, cx, cy, px, py, K)
+%                  2) error parameters (isCamPixelError, PixelErr, 
+%                                     isDistorted, distCoeff, distortOrder, errorFactor
+%                                     isMistracked, misTrackingRatio)
+% 
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function cameraParams = cameraSettings(distRange)
     %% Camera Setting Parameters
     Tcb = [angle2dcm(pi/2, 0,pi/2), -[0;0;1e-3]; zeros(1,3), 1]; % T^c_b, extrinsic

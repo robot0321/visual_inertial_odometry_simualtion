@@ -15,7 +15,7 @@
 % Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental matrix),
 %                   distCoeff(& error), misTrackingRatio
 % 
-% Copyright (c) 2011 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
@@ -82,19 +82,18 @@ for currStep=startIdx:size(Tbw,3)
     feat_intrscCurrIdx = feat_intrsectValidx;
     
     % mistracked (mismatched ?) feature 
+    % for the continuous tracking, mistracking is done on the existed feature, not ramdomly made feature.
     if(cameraParams.errorParams.misTrackParams.isMistracked && ~isempty(feat_intrsectValidx))
         numMistrackedFeat = round(length(feat_intrsectValidx) * cameraParams.errorParams.misTrackParams.mistrackingRatio);
-        pp = randperm(length(feat_intrsectValidx), numMistrackedFeat);
-        newCandidate = [feat_intrsectValidx(pp), feat_currNewValidx];
-        newpp = randperm(length(newCandidate), numMistrackedFeat);
-        feat_intrscCurrIdx(pp) = newCandidate(newpp);
-        [asdf, currnewadf,~] = intersect(feat_currNewValidx, newCandidate(newpp));
-        if(~isempty(asdf))
-            feat_currNewValidx(currnewadf) = [];
+        mistrackIdx = randperm(length(feat_intrsectValidx), numMistrackedFeat);
+        newCandidate = [feat_intrsectValidx(mistrackIdx), feat_currNewValidx];
+        newCandidIdx = randperm(length(newCandidate), numMistrackedFeat); % select from misTrack + newCurr
+        feat_intrscCurrIdx(mistrackIdx) = newCandidate(newCandidIdx);
+        [~, currMistrackIdx,~] = intersect(feat_currNewValidx, newCandidate(newCandidIdx));
+        if(~isempty(currMistrackIdx))
+            feat_currNewValidx(currMistrackIdx) = [];
         end
     end
-    % for the continuous tracking, mistracking is done on the existed feature, not ramdomly made feature.
-    
     
     % Features on Camera Plane 
     robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,prevStep));
@@ -113,31 +112,25 @@ for currStep=startIdx:size(Tbw,3)
     
     % Fundamental Matrix with RANSAC
     if (size(feat_prevTrckPixel,2) >= 8)
-        [~, valid_index] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
+        [~, RSvalid_logic] = estimateFundamentalMatrix(feat_prevTrckPixel(1:2,:)', feat_currTrckPixel(1:2,:)',...
                             'Method', 'RANSAC', 'DistanceThreshold', estFundaThreshold);
-    else, valid_index = ones(1,size(feat_currTrckPixel,2)); 
+    else, RSvalid_logic = ones(1,size(feat_currTrckPixel,2)); 
     end
 
     % Testing Inlier Ratio
-    sum(valid_index)/size(feat_prevTrckPixel,2)
+    sum(RSvalid_logic)/size(feat_prevTrckPixel,2)
     
     % update index with the results of RANSAC
-    feat_prevDeadValidx = [feat_prevDeadValidx, feat_intrscPrevIdx(~valid_index)];
-%     feat_intrscPrevIdx = feat_intrscPrevIdx(valid_index);
-%     feat_intrscCurrIdx = feat_intrscCurrIdx(valid_index);
+    feat_prevDeadValidx = [feat_prevDeadValidx, feat_intrscPrevIdx(~RSvalid_logic)];
     
     % Stacking existed Tracks with new features on the LiveTracks
-    vvvv = find(valid_index);
+    RS_valid_index = find(RSvalid_logic);
     tempLiveTracks = {};
-    for trackNumber = 1:numel(vvvv)
-        tempLiveTracks{feat_intrscCurrIdx(vvvv(trackNumber))} = ...
-            struct('world_idx', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.world_idx, feat_intrscCurrIdx(vvvv(trackNumber))], ...
-                   'frame', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.frame, currStep], ...
-                   'pts', [LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}.pts, feat_currTrckPixel(:,vvvv(trackNumber))]);
-       % if the tracking world index is changed, data on the previous index have to be deleted
-%        if(feat_intrscCurrIdx(vvvv(trackNumber))~=feat_intrscPrevIdx(vvvv(trackNumber)))
-%            LiveTracks{feat_intrscPrevIdx(vvvv(trackNumber))}=[]; 
-%        end
+    for trackNumber = 1:numel(RS_valid_index)
+        tempLiveTracks{feat_intrscCurrIdx(RS_valid_index(trackNumber))} = ...
+            struct('world_idx', [LiveTracks{feat_intrscPrevIdx(RS_valid_index(trackNumber))}.world_idx, feat_intrscCurrIdx(RS_valid_index(trackNumber))], ...
+                   'frame', [LiveTracks{feat_intrscPrevIdx(RS_valid_index(trackNumber))}.frame, currStep], ...
+                   'pts', [LiveTracks{feat_intrscPrevIdx(RS_valid_index(trackNumber))}.pts, feat_currTrckPixel(:,RS_valid_index(trackNumber))]);
     end
     
     % Stacking newTracks on the LiveTracks
@@ -152,7 +145,6 @@ for currStep=startIdx:size(Tbw,3)
     DeadTracks = cell(1,trajParams.featGenParams.Nfeatures);
     for trackNumber = 1:numel(feat_prevDeadValidx)
         DeadTracks{feat_prevDeadValidx(trackNumber)} = LiveTracks{feat_prevDeadValidx(trackNumber)};
-%         tempLiveTracks{feat_prevDeadValidx(trackNumber)} = [];
     end
     
     LiveTracks = tempLiveTracks;
@@ -177,8 +169,8 @@ for currStep=startIdx:size(Tbw,3)
         scatter(feat_currTrckPixel(1,:), feat_currTrckPixel(2,:),50,'r'); hold on;
         scatter(feat_prevTrckPixel(1,:), feat_prevTrckPixel(2,:),'g');
         % draw the valid(yellow) and invalid(black) optical flows
-        plot([feat_prevTrckPixel(1,valid_index); feat_currTrckPixel(1,valid_index)], [feat_prevTrckPixel(2,valid_index); feat_currTrckPixel(2,valid_index)],'-y');
-        plot([feat_prevTrckPixel(1,~valid_index); feat_currTrckPixel(1,~valid_index)], [feat_prevTrckPixel(2,~valid_index); feat_currTrckPixel(2,~valid_index)],'-k');
+        plot([feat_prevTrckPixel(1,RSvalid_logic); feat_currTrckPixel(1,RSvalid_logic)], [feat_prevTrckPixel(2,RSvalid_logic); feat_currTrckPixel(2,RSvalid_logic)],'-y');
+        plot([feat_prevTrckPixel(1,~RSvalid_logic); feat_currTrckPixel(1,~RSvalid_logic)], [feat_prevTrckPixel(2,~RSvalid_logic); feat_currTrckPixel(2,~RSvalid_logic)],'-k');
     end
     if ~isempty(feat_currNewValidx), scatter(feat_currNewPixel(1,:), feat_currNewPixel(2,:),50,'r'); end 
     % optical flow between tracked features
@@ -206,6 +198,6 @@ for currStep=startIdx:size(Tbw,3)
     
     drawnow();
 %% For next step
-    feat_prevValidx = sort([feat_intrscCurrIdx(vvvv), feat_currNewValidx]);
+    feat_prevValidx = sort([feat_intrscCurrIdx(RS_valid_index), feat_currNewValidx]);
     
 end

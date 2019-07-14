@@ -1,3 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% <getTrajectory.m specification>
+% 1. Load dataset from mat files 
+% 2. make T^b_w and t^w_wb with frame tranformation
+%    
+% INPUT   : the path of mat file
+% OUTPUT  : Transformation form world to body (T^b_w) and Translation from world to body in world view (t^w_wb)
+% FUNCTION: Load a dataset and make transformation matrix
+% 
+% Tuning Parameter: NONE
+% 
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [Tbw, tw_wb] = getTrajectory(dataPath)
     load(dataPath, 'dataset');
     tw_wb = dataset.Pw_wb;

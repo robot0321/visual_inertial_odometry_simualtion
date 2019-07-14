@@ -1,4 +1,17 @@
-% Feature Constraint
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% <featureConstraint.m specification>
+% 1. Screening the valid index from user-selected constraint 
+%    
+% INPUT   : User selected constraint-type ('distance', 'heading', 'pixelRange', robotParams, cameraParams)
+% OUTPUT  : World Index which fits to the constraint
+% FUNCTION: Getting the valid (world) index from user-selected contraint 
+% 
+% Tuning Parameter: NONE
+% 
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function world_valid_index = featureConstraint(featConstType, robotParams, cameraParams)
     world_valid_index = ones(1, size(robotParams.feat_position,2)); % the number of features
     currpos = - robotParams.Tbw(1:3,1:3)'*robotParams.Tbw(1:3,4);
