@@ -44,7 +44,7 @@ function cameraParams = cameraSettings(distRange)
                            'distortOrder', distortOrder, 'errorFactor',errorFactor);
 
     % Mistracking ratio during tracking (like KLT mistracking)
-    isMistracked = false;
+    isMistracked = true;
     misTrackingRatio = 0.05;
     misTrackParams = struct('isMistracked',isMistracked,'mistrackingRatio',misTrackingRatio);
 
