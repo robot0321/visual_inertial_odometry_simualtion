@@ -23,7 +23,7 @@ rng(10);
 addpath('./functions');
 addpath('./trajectories');
 
-dual_left_monitor = 1; 
+dual_left_monitor = 0; 
 if(dual_left_monitor) 
     figure(1); set(gcf,'Position',[-1700 50 1300 900]); % This is my workspace setting. 
 else 
