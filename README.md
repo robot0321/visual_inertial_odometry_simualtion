@@ -43,7 +43,7 @@ These simulations provide the ideal case with **some noises** which can be turne
 > * SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and ~~IMU in SIM3~~
 > * SIM6 visualize as same as SIM2
 > * SIM6 calculate epipoar constraint cost to with matched features
-
+> * SIM6 reproduce 3D feature position from recorded tracks
 
 ## To Do List
 #### Common
@@ -57,9 +57,9 @@ These simulations provide the ideal case with **some noises** which can be turne
 - [ ] Amending the notation of the Translation/Rotation/Transformation vectors/Matrixes in the variables.
 #### SIM6
 - [ ] SIM6 is a simulation of visual-inertial odometry using the camera in SIM2 and IMU in SIM3
-- [ ] SIM6 visualize as same as SIM2
+- [x] SIM6 visualize as same as SIM2
 - [x] SIM6 calculate epipoar constraint cost to with matched features
-
+- [x] SIM6 reproduce 3D feature position from recorded tracks
 
 ## Liscence
 GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
@@ -106,5 +106,5 @@ GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 > * SIM6는 SIM2의 카메라와 SIM3의 IMU를 이용한 비주얼-관성 오도메트리에 대한 시뮬레이션입니다.
 > * SIM6는 SIM2와 같은 시각화를 합니다.
 > * SIM6는 매칭된 특징점에 대해 에피폴라 조건에 따른 비용함수를 계산합니다.
-
+> * SIM6은 기록된 트랙(LiveTrack or DeadTrack)으로 부터 특징점의 3차원 위치를 복구합니다.
 
