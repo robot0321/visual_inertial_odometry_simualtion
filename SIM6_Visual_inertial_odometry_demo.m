@@ -54,23 +54,19 @@ LiveTracks = {};
 DeadTracks = {};
 
 %% driving robot
-startIdx = 1;
+startIdx = 1; featGroup=struct();
 for currStep=startIdx:size(Tbw,3)
     % Index saving for optical flow
     prevStep=currStep-1;
-    if(currStep==startIdx), feat_prevValidx = []; prevStep=currStep; end
+    if(currStep==startIdx), featGroup.feat_prevValidx = []; prevStep=currStep; end
     robotParams = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,currStep));
     robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,prevStep));
 
     %% Feature Tracking & Optical Flow
-    featGroup = trackingStep(feat_prevValidx, robotParamsPrev, robotParams, cameraParams);
+    featGroup = trackingStep(featGroup, robotParamsPrev, robotParams, cameraParams);
 
     % Calculating the cost of the epipolar constraint 
     d_list = epipolarConstraint(featGroup, robotParams, robotParamsPrev, cameraParams);
-    figure(1); subplot(2,3,5);
-    histogram(sort(d_list),31);
-    title('Histogram of Epipolar Constraint Cost');
-%     axis([-1e-8, 1e-8, 0, 50])
     
     %% data consistency check
     % Fundamental Matrix with RANSAC
@@ -97,9 +93,9 @@ for currStep=startIdx:size(Tbw,3)
     TrackParams.LiveTracks = LiveTracks; TrackParams.DeadTracks = DeadTracks; 
     
     %% draw figures
-    drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic,TrackParams, featGroup, cameraParams)
+    drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic,TrackParams, featGroup, cameraParams, d_list)
     
     %% For next step
-    feat_prevValidx = sort([featGroup.feat_intrscCurrIdx(RS_valid_index), featGroup.feat_currNewValidx]);
+    featGroup.feat_prevValidx = sort([featGroup.feat_intrscCurrIdx(RS_valid_index), featGroup.feat_currNewValidx]);
     
 end

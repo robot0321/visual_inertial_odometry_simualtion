@@ -6,7 +6,7 @@ MATLAB simulation of (Mono) visual-inertial odometry (VIO) & visual-wheel odomet
 These are MATLAB simulations of (Mono) Visual { Inertial | Wheel } Odometry
 These simulations provide the ideal case with **some noises** which can be turned off and on.
 
-* You can use this simulation belong your need
+* You can use this simulation as you wish with GNU 3.0
 * I checked all the demo files whether it can be runned without any amendation, but the MATLAB version can be critical 
 * I made this simulations on MATLAB 2019a
 

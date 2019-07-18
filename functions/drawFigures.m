@@ -12,7 +12,7 @@
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, TrackParams, featGroup, cameraParams)
+function drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, TrackParams, featGroup, cameraParams, d_list)
     subx=2; suby=2;
     if(isfield(TrackParams,'reprodFeat')), subx=2; suby=3; end
 
@@ -88,5 +88,14 @@ function drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, Trac
         axis([0, cameraParams.px, 0, cameraParams.py]);
         legend('trueTracks', 'reproductTracks');
     end    
+    
+    %% Epipolar Constraint Parameters 
+    if ~isempty(d_list)
+        subplot(2,3,5);
+        histogram(sort(d_list),31);
+        title('Histogram of Epipolar Constraint Cost');
+%        axis([-1e-8, 1e-8, 0, 50])
+    end
+    
     drawnow();
 end
