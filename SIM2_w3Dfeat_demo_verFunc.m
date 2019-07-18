@@ -84,8 +84,9 @@ for currStep=startIdx:size(Tbw,3)
     RS_valid_index = find(RSvalid_logic);
     [LiveTracks, DeadTracks] = slidingWindowManager(LiveTracks, currStep, RS_valid_index, featGroup, trajParams);
 
+    TrackParams = struct(); TrackParams.LiveTracks = LiveTracks; TrackParams.DeadTracks = DeadTracks;
     %% draw figures
-    drawFigures(traj_world_wb, feat_position, LiveTracks, DeadTracks, currStep, RSvalid_logic, featGroup, cameraParams)
+    drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, TrackParams, featGroup, cameraParams)
     
     %% For next step
     feat_prevValidx = sort([featGroup.feat_intrscCurrIdx(RS_valid_index), featGroup.feat_currNewValidx]);

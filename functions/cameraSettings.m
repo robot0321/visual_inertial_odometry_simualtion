@@ -17,7 +17,10 @@
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function cameraParams = cameraSettings(distRange)
+function cameraParams = cameraSettings(distRange, errorSetting)
+    if nargin==1
+        errorSetting = {};
+    end
     %% Camera Setting Parameters
     Tcb = [angle2dcm(pi/2, 0,pi/2), -[0;0;1e-3]; zeros(1,3), 1]; % T^c_b, extrinsic
     % -> the origin of camera frame is at the (x = 1e-3m, y = 0, z = 0) in body frame
@@ -27,13 +30,16 @@ function cameraParams = cameraSettings(distRange)
     K = [fx/2, 0, cx;
          0, fy/2, cy;
          0,    0,  1]; % intrinsic matrix
-
+    
     %% Camera Image Errors 
+    errorParams = struct(); % Collecting error Parameters
+    
     % noise on camera plane (pixel noise) about 0.1 ~ 2
     isCamPixelError = false;
     PixelErr = 1; 
     pixelErrParams = struct('isCamPixelError',isCamPixelError,'PixelErr',PixelErr);
-
+    errorParams.pixelErrParams = pixelErrParams;
+                
     % Whether applying undistortion error//distCoeff: 
     % distortion error is applied at world2pixel() function
     isDistorted = false;
@@ -42,15 +48,25 @@ function cameraParams = cameraSettings(distRange)
     errorFactor = [0.1, 0.072, 0.0007, 0.0014]; % at undistortion
     distortParams = struct('isDistorted', isDistorted, 'distCoeff', distCoeff, ...
                            'distortOrder', distortOrder, 'errorFactor',errorFactor);
-
+    errorParams.distortParams = distortParams;
+                
     % Mistracking ratio during tracking (like KLT mistracking)
-    isMistracked = true;
+    isMistracked = false;
     misTrackingRatio = 0.05;
     misTrackParams = struct('isMistracked',isMistracked,'mistrackingRatio',misTrackingRatio);
-
-    % Collecting error Parameters
-    errorParams = struct('pixelErrParams',pixelErrParams,'distortParams',distortParams,'misTrackParams',misTrackParams);
+    errorParams.misTrackParams = misTrackParams;
     
+    for idx=1:length(errorSetting)
+        switch(errorSetting{idx})
+            case 'pixelErr'
+                isCamPixelError = true;
+            case 'distortion'
+                isDistorted = true;
+            case 'mistrack'
+                isMistracked = true;
+        end
+    end
+   
     % Organizing total camera parameters
     cameraParams = struct('Tcb',Tcb,'fLx',fx,'fLy',fy,'cx',cx, 'cy',cy,'px',px,'py',py, ...
                         'mindist',distRange.mindist,'maxdist',distRange.maxdist, 'K',K, 'errorParams', errorParams);

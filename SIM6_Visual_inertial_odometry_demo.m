@@ -15,7 +15,7 @@
 % Tuning Parameter: min/maxdist, PixelErr, DistanceThreshold(fundamental
 % matrix), distCoeff(& error)
 % 
-% Copyright ? 2011 JaeYoung Chung (robot0321@github) All Rights Reserved
+% Copyright (c) 2019 JaeYoung Chung (robot0321@github) All Rights Reserved
 % Lisence: GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear; close all;
@@ -23,16 +23,16 @@ rng(10);
 addpath('./functions');
 addpath('./trajectories');
 
-dual_left_monitor = 0; 
+dual_left_monitor = 1; 
 if(dual_left_monitor) 
-    figure(1); set(gcf,'Position',[-1700 50 1300 900]); % This is my workspace setting. 
+    figure(1); set(gcf,'Position',[-1900 50 1800 900]); % This is my workspace setting. 
 else 
-    figure(1); set(gcf,'Position',[100 50 1300 900]); % ... usually this option is proper OR set as you wish
+    figure(1); set(gcf,'Position',[100 50 1800 900]); % ... usually this option is proper OR set as you wish
 end
 
 %% environment setting
 % Trajectory LIST --> select among 'traj1', 'traj2', 'traj3'
-trajtype = 'traj2';
+trajtype = 'traj3';
 % Get the trajectory parameters from its type.   
 trajParams = trajSettings(trajtype); % Set the proper options fitted with the selected trajectory
 
@@ -44,7 +44,7 @@ feat_position = featureGeneration(traj_world_wb, trajParams.featGenParams);
 
 %% camera setting
 % camera parameter setting, 
-cameraParams = cameraSettings(trajParams.distRange);
+cameraParams = cameraSettings(trajParams.distRange, {});
 
 % Distance Threshold in finding the 8-point RANSAC
 estFundaThreshold = 0.2;
@@ -67,8 +67,9 @@ for currStep=startIdx:size(Tbw,3)
 
     % Calculating the cost of the epipolar constraint 
     d_list = epipolarConstraint(featGroup, robotParams, robotParamsPrev, cameraParams);
-    figure(3);
+    figure(1); subplot(2,3,5);
     histogram(sort(d_list),31);
+    title('Histogram of Epipolar Constraint Cost');
 %     axis([-1e-8, 1e-8, 0, 50])
     
     %% data consistency check
@@ -89,9 +90,14 @@ for currStep=startIdx:size(Tbw,3)
     % Stacking existed Tracks with new features on the LiveTracks
     RS_valid_index = find(RSvalid_logic);
     [LiveTracks, DeadTracks] = slidingWindowManager(LiveTracks, currStep, RS_valid_index, featGroup, trajParams);
-
+    
+    % from Tracks, Get the 3D position 
+    reprodFeat = track2feat3D(DeadTracks, Tbw, 1e6, robotParams, cameraParams);  
+    TrackParams = struct(); TrackParams.reprodFeat = reprodFeat;
+    TrackParams.LiveTracks = LiveTracks; TrackParams.DeadTracks = DeadTracks; 
+    
     %% draw figures
-    drawFigures(traj_world_wb, feat_position, LiveTracks, DeadTracks, currStep, RSvalid_logic, featGroup, cameraParams)
+    drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic,TrackParams, featGroup, cameraParams)
     
     %% For next step
     feat_prevValidx = sort([featGroup.feat_intrscCurrIdx(RS_valid_index), featGroup.feat_currNewValidx]);

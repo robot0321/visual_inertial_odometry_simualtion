@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [LiveTracks, DeadTracks] = slidingWindowManager(LiveTracks, currStep, RS_valid_index, featGroup, trajParams)
-    tempLiveTracks = {};
+    tempLiveTracks = cell(1,trajParams.featGenParams.Nfeatures);
     misTrackCount = 0;
     for trackNumber = 1:numel(RS_valid_index)
         tempLiveTracks{featGroup.feat_intrscCurrIdx(RS_valid_index(trackNumber))} = ...
