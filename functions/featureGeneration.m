@@ -27,5 +27,5 @@ function feat_position = featureGeneration(traj_world_wb, featGenParams)
         feat_position = [feat_position, traj_world_wb(:,step*(i-1)+1) + [(rand(2,NfeatPerL)-0.5)*xyRange; (rand(1,NfeatPerL)-0.5)*zRange]];
     end
     selectIdx = randperm(length(feat_position), Nfeatures);
-    feat_position = feat_position(:,selectIdx);
+    feat_position = feat_position(:,sort(selectIdx));
 end

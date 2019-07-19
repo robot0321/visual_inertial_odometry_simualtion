@@ -4,6 +4,7 @@ function d_list = epipolarConstraint(featGroup, robotParams, robotParamsPrev, ca
     dp_b1_b1b2 = robotParamsPrev.Tbw(1:3,4) - R_b1b2 * robotParams.Tbw(1:3,4); % Pb1_b1w - Rb1b2 * Pb2_b2w
     R = cameraParams.Tcb(1:3,1:3) * R_b1b2 * cameraParams.Tcb(1:3,1:3)'; % Rc1c2 = Rc1b1 * Rb1b2 * Rb2c2
     dp = cameraParams.Tcb(1:3,4) + cameraParams.Tcb(1:3,1:3)*dp_b1_b1b2 + (-R*cameraParams.Tcb(1:3,4));
+    dp = dp/norm(dp);
     d_list = [];
     for j=1:length(featGroup.feat_prevTrckNormal)
         % epipolar constraint

@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % <trackingStep.m specification>
 % 1. From previous features, get the (new) current features
 % 2. To use in consistency check, slidingWindowManager, etc., save the results in featGroup with various form

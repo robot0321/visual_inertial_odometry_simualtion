@@ -59,11 +59,11 @@ function cameraParams = cameraSettings(distRange, errorSetting)
     for idx=1:length(errorSetting)
         switch(errorSetting{idx})
             case 'pixelErr'
-                isCamPixelError = true;
+                errorParams.pixelErrParams.isCamPixelError = true;
             case 'distortion'
-                isDistorted = true;
+                errorParams.distortParams.isDistorted = true;
             case 'mistrack'
-                isMistracked = true;
+                errorParams.misTrackParams.isMistracked = true;
         end
     end
    

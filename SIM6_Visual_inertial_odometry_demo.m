@@ -43,7 +43,8 @@ trajParams = trajSettings(trajtype); % Set the proper options fitted with the se
 feat_position = featureGeneration(traj_world_wb, trajParams.featGenParams);
 
 %% camera setting
-% camera parameter setting, 
+% camera parameter setting, write the error model you need on second parameter
+% 'pixelErr', 'distortion', 'mistrack'
 cameraParams = cameraSettings(trajParams.distRange, {});
 
 % Distance Threshold in finding the 8-point RANSAC
@@ -54,13 +55,14 @@ LiveTracks = {};
 DeadTracks = {};
 
 %% driving robot
-startIdx = 1; featGroup=struct();
+startIdx = 1; featGroup=struct(); t=0;
 for currStep=startIdx:size(Tbw,3)
     % Index saving for optical flow
-    prevStep=currStep-1;
-    if(currStep==startIdx), featGroup.feat_prevValidx = []; prevStep=currStep; end
+    if(currStep==startIdx)
+        featGroup.feat_prevValidx = []; 
+        robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,currStep));
+    end
     robotParams = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,currStep));
-    robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,prevStep));
 
     %% Feature Tracking & Optical Flow
     featGroup = trackingStep(featGroup, robotParamsPrev, robotParams, cameraParams);
@@ -69,11 +71,18 @@ for currStep=startIdx:size(Tbw,3)
     d_list = epipolarConstraint(featGroup, robotParams, robotParamsPrev, cameraParams);
     
     %% data consistency check
-    % Fundamental Matrix with RANSAC
-    if (size(featGroup.feat_prevTrckPixel,2) >= 8)
-        [~, RSvalid_logic] = estimateFundamentalMatrix(featGroup.feat_prevTrckPixel(1:2,:)', featGroup.feat_currTrckPixel(1:2,:)',...
-                            'Method', 'RANSAC', 'DistanceThreshold', estFundaThreshold);
-    else, RSvalid_logic = ones(1,size(featGroup.feat_currTrckPixel,2)); 
+    % consistency_check: 'RANSAC', 'priorSAC'
+    consistency_check = 'priorSAC';
+    switch(consistency_check)
+        case 'RANSAC'
+            % Fundamental Matrix with RANSAC
+            if (size(featGroup.feat_prevTrckPixel,2) >= 8)
+                [~, RSvalid_logic] = estimateFundamentalMatrix(featGroup.feat_prevTrckPixel(1:2,:)', featGroup.feat_currTrckPixel(1:2,:)',...
+                                    'Method', 'RANSAC', 'DistanceThreshold', estFundaThreshold);
+            else, RSvalid_logic = ones(1,size(featGroup.feat_currTrckPixel,2)); 
+            end
+        case 'priorSAC'
+            RSvalid_logic = d_list < 1e-8 & d_list > -1e-8;
     end
 
     % Testing Inlier Ratio
@@ -97,5 +106,11 @@ for currStep=startIdx:size(Tbw,3)
     
     %% For next step
     featGroup.feat_prevValidx = sort([featGroup.feat_intrscCurrIdx(RS_valid_index), featGroup.feat_currNewValidx]);
-    
+   
+    %% moving features
+    robotParamsPrev = struct('feat_position', feat_position, 'Tbw',Tbw(:,:,currStep));
+    nt = t + pi/10;
+    delta_sin = 10*[sin(nt)-sin(t); -sin(nt)+sin(t); 0]; 
+    feat_position(:,250:300) = feat_position(:,250:300) + delta_sin;
+    t = nt;
 end

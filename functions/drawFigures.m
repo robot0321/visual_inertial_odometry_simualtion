@@ -73,6 +73,7 @@ function drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, Trac
         stem(idxlist, normlist);
         title(['global 3D position error with mu: ', num2str(TrackParams.reprodFeat.mu)]);
         xlabel('index'); ylabel('norm2 err [m]')
+        xlim([1, 700]);
 
         % 2D reprojection 
         subplot(subx,suby,6);
