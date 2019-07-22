@@ -14,8 +14,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function reprodFeat = track2feat3D(Tracks, Tbw, mu, robotParams, cameraParams)
+%     persistent outnumline
     feat2D = cell(1, length(Tracks));
     feat3D = cell(1, length(Tracks));
+    status = cell(1, length(Tracks));
     for trackNum = 1:length(Tracks)
         if(~isempty(Tracks{trackNum}) && length(Tracks{trackNum}.frame)~=1)
             % Getting the 3D & 2D(image plane) feature position from the LiveTrack
@@ -34,19 +36,43 @@ function reprodFeat = track2feat3D(Tracks, Tbw, mu, robotParams, cameraParams)
             Tc1cn = inv(Tcic1(:,:,end));
             f_c1_0 = triangulateTwoView(Tc1cn, cameraParams.K, Tracks{trackNum}.pts(:,[1,end]));
             [f_c1Mv, ~, f_cisFMv] = triangulateMultiView(Tcic1, f_c1_0, cameraParams.K, Tracks{trackNum}.pts, [1,0;0,1], mu);
-
-            % The estimation of 3D feature position
+            % below operations are done for the trust test
+            f_c1Mv22 = triangulateTwoView(inv(Tcic1(:,:,2)), cameraParams.K, Tracks{trackNum}.pts(:,1:2));
+            [f_c1Mv33, ~, ~] = triangulateMultiView(Tcic1(:,:,[1,end]), f_c1_0, cameraParams.K, Tracks{trackNum}.pts(:,[1,end]), [1,0;0,1], mu);
+            Tcn_1cn = Tcic1(:,:,end-1)/Tcic1(:,:,end);
+            f_c1Mv44 = triangulateTwoView(Tcn_1cn, cameraParams.K, Tracks{trackNum}.pts(:,end-1:end));
+            
+            % The estimation of 3D (world) feature position
             f_g2v = Tc1w\[f_c1Mv; 1];
-            feat3D{trackNum} = f_g2v(1:3,1);  % Global position of features with 2-view solution
+            f_g2v22 = Tc1w\[f_c1Mv22; 1];
+            f_g2v33 = Tc1w\[f_c1Mv33; 1];
+            f_g2v44 = Tc1w\(Tcic1(:,:,end-1)\[f_c1Mv44; 1]);
 
+            % trust test: consistency check between first 2-view, last 2-veiw, and so on...
+            crit = 0.5;
+%             tttr=[robotParams.feat_position(:,trackNum);1];
+            if norm(f_g2v-f_g2v22)>crit || norm(f_g2v22-f_g2v44)>crit || norm(f_g2v-f_g2v33)>crit
+%                 [norm(tttr-f_g2v),norm(tttr-f_g2v22),norm(tttr-f_g2v33),norm(tttr-f_g2v44)]
+%                 [tttr, f_g2v, f_g2v22, f_g2v33, f_g2v44]
+%                 %true, multi, 1,2view, 1,nview, n-1,nview
+%                 Tracks{trackNum}.world_idx
+%                 outnumline = [outnumline, trackNum];
+                continue; % do not save in feat3D, feat2D, status with current trackNum
+            end
+            
+            feat3D{trackNum} = f_g2v(1:3,1);  % Global position of features with 2-view solution
+            
             % Convertion from estimated camera frame coordinate to the image plane
             estMultiFMv_meas = cameraParams.K*(f_cisFMv./f_cisFMv(3,:));
             feat2D{trackNum} = struct('frame', Tracks{trackNum}.frame, 'pts', estMultiFMv_meas(1:2,:));
             True_meas = cameraParams.K*(pCi_list./pCi_list(3,:)); True_meas = True_meas(1:2,:);
             feat2D{trackNum}.pts_true = True_meas;
+            
+            % if the feature is stationary, make status=1
+            status{trackNum} = 1;
         end
     end
-    reprodFeat = struct(); reprodFeat.feat3D=feat3D; reprodFeat.feat2D=feat2D; reprodFeat.mu=mu;
+    reprodFeat = struct(); reprodFeat.feat3D=feat3D; reprodFeat.feat2D=feat2D; reprodFeat.mu=mu; reprodFeat.status=status;
 end
 
 %% function

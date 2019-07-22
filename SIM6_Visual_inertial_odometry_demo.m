@@ -32,7 +32,7 @@ end
 
 %% environment setting
 % Trajectory LIST --> select among 'traj1', 'traj2', 'traj3'
-trajtype = 'traj3';
+trajtype = 'traj2';
 % Get the trajectory parameters from its type.   
 trajParams = trajSettings(trajtype); % Set the proper options fitted with the selected trajectory
 
@@ -71,9 +71,11 @@ for currStep=startIdx:size(Tbw,3)
     d_list = epipolarConstraint(featGroup, robotParams, robotParamsPrev, cameraParams);
     
     %% data consistency check
-    % consistency_check: 'RANSAC', 'priorSAC'
-    consistency_check = 'priorSAC';
+    % consistency_check: 'NONE', 'RANSAC', 'priorSAC'
+    consistency_check = 'NONE';
     switch(consistency_check)
+        case 'NONE'
+            RSvalid_logic = true(size(d_list));
         case 'RANSAC'
             % Fundamental Matrix with RANSAC
             if (size(featGroup.feat_prevTrckPixel,2) >= 8)
