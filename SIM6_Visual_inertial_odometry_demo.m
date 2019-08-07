@@ -45,7 +45,7 @@ feat_position = featureGeneration(traj_world_wb, trajParams.featGenParams);
 %% camera setting
 % camera parameter setting, write the error model you need on second parameter
 % 'pixelErr', 'distortion', 'mistrack'
-cameraParams = cameraSettings(trajParams.distRange, {});
+cameraParams = cameraSettings(trajParams.distRange, {'pixelErr'});
 
 % Distance Threshold in finding the 8-point RANSAC
 estFundaThreshold = 0.2;
@@ -72,7 +72,7 @@ for currStep=startIdx:size(Tbw,3)
     
     %% data consistency check
     % consistency_check: 'NONE', 'RANSAC', 'priorSAC'
-    consistency_check = 'NONE';
+    consistency_check = 'RANSAC';
     switch(consistency_check)
         case 'NONE'
             RSvalid_logic = true(size(d_list));

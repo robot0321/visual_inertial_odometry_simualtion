@@ -35,6 +35,9 @@ function reprodFeat = track2feat3D(Tracks, Tbw, mu, robotParams, cameraParams)
             % With the first and last frame of each LiveTrack, the baseline could be maximum in each LiveTrack
             Tc1cn = inv(Tcic1(:,:,end));
             f_c1_0 = triangulateTwoView(Tc1cn, cameraParams.K, Tracks{trackNum}.pts(:,[1,end]));
+            if (size(Tracks{trackNum}.pts,2)>4)
+                triangulateThreeView(Tcic1, cameraParams.K, Tracks{trackNum}.pts(:,1:end));
+            end
             [f_c1Mv, ~, f_cisFMv] = triangulateMultiView(Tcic1, f_c1_0, cameraParams.K, Tracks{trackNum}.pts, [1,0;0,1], mu);
             % below operations are done for the trust test
             f_c1Mv22 = triangulateTwoView(inv(Tcic1(:,:,2)), cameraParams.K, Tracks{trackNum}.pts(:,1:2));
@@ -43,15 +46,15 @@ function reprodFeat = track2feat3D(Tracks, Tbw, mu, robotParams, cameraParams)
             f_c1Mv44 = triangulateTwoView(Tcn_1cn, cameraParams.K, Tracks{trackNum}.pts(:,end-1:end));
             
             % The estimation of 3D (world) feature position
-            f_g2v = Tc1w\[f_c1Mv; 1];
-            f_g2v22 = Tc1w\[f_c1Mv22; 1];
-            f_g2v33 = Tc1w\[f_c1Mv33; 1];
-            f_g2v44 = Tc1w\(Tcic1(:,:,end-1)\[f_c1Mv44; 1]);
+            f_g2v = Tc1w\[f_c1Mv; 1];                        % c1~cn (multi)
+            f_g2v22 = Tc1w\[f_c1Mv22; 1];                    % c1 c2 (2)
+            f_g2v33 = Tc1w\[f_c1Mv33; 1];                    % c1, cn (multi)
+            f_g2v44 = Tc1w\(Tcic1(:,:,end-1)\[f_c1Mv44; 1]); % cn-1, cn (2)
 
             % trust test: consistency check between first 2-view, last 2-veiw, and so on...
-            crit = 0.5;
+            crit = 0.2;
 %             tttr=[robotParams.feat_position(:,trackNum);1];
-            if norm(f_g2v-f_g2v22)>crit || norm(f_g2v22-f_g2v44)>crit || norm(f_g2v-f_g2v33)>crit
+            if norm(f_g2v22-f_g2v44) > crit*norm(f_g2v)% || norm(f_g2v-f_g2v22)>crit || norm(f_g2v-f_g2v33)>crit
 %                 [norm(tttr-f_g2v),norm(tttr-f_g2v22),norm(tttr-f_g2v33),norm(tttr-f_g2v44)]
 %                 [tttr, f_g2v, f_g2v22, f_g2v33, f_g2v44]
 %                 %true, multi, 1,2view, 1,nview, n-1,nview
@@ -83,6 +86,23 @@ function f_c1 = triangulateTwoView(Tc1cn, K, pts)
     v_1 = obser(:,1);    	v_1 = v_1/norm(v_1);
     v_2 = obser(:,end);		v_2 = v_2/norm(v_2);
     A = [v_1 -C1n*v_2];    	b = t1n_1;
+    lambda = A\b;
+    f_c1 = lambda(1)*v_1;
+end
+
+function f_c1 = triangulateThreeView(Tcisc1, K, pts)
+%  it can be calculate N-view solution as this way but inverse of 3(N-1)*N matrix is not affordable
+    Tc1cis = zeros(4,4,size(Tcisc1,3));
+    Tc1cis(:,:,2) = inv(Tcisc1(:,:,2));
+    Tc1cis(:,:,3) = inv(Tcisc1(:,:,3));
+    
+    C12 = Tc1cis(1:3,1:3,2); t12_1 = Tc1cis(1:3,4,2);
+    C13 = Tc1cis(1:3,1:3,3); t13_1 = Tc1cis(1:3,4,3);
+    obser = K\[pts; ones(1,size(pts,2))]; % 1st person coordinate
+    v_1 = obser(:,1);    	v_1 = v_1/norm(v_1);
+    v_2 = obser(:,2);		v_2 = v_2/norm(v_2);
+    v_3 = obser(:,3);		v_3 = v_3/norm(v_3);
+    A = [v_1, -C12*v_2, zeros(3,1); v_1, zeros(3,1), -C13*v_3];   b = [t12_1; t13_1];
     lambda = A\b;
     f_c1 = lambda(1)*v_1;
 end

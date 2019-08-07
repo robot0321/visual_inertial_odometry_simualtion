@@ -93,9 +93,23 @@ function drawFigures(traj_world_wb, feat_position, currStep, RSvalid_logic, Trac
     %% Epipolar Constraint Parameters 
     if ~isempty(d_list)
         subplot(2,3,5);
-        histogram(sort(d_list),31);
+        % Histogram
+        h1=histogram(sort(d_list),71);
         title('Histogram of Epipolar Constraint Cost');
 %        axis([-1e-8, 1e-8, 0, 50])
+
+%         % Kernel Density Estimation (KDE)
+%         h=1.06*sqrt(var(d_list))*nthroot(length(d_list), -5);
+%         syms x
+%         for ii=1:length(d_list)
+%             f = 1/sqrt(2*pi)*exp(-((x-d_list(ii))/h).^2); % not /h, since h is too small
+%             if ii==1, ft = f;
+%             else, ft = ft + f;
+%             end
+%         end
+% 
+%         hold on; fplot(ft/2); hold off;
+%         axis([min(h1.BinEdges), max(h1.BinEdges), 0, max(h1.Values)]);
     end
     
     drawnow();
